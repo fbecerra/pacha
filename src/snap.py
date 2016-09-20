@@ -98,8 +98,8 @@ class Snap:
       ngas = self.npart[0]
 
       # Read positions
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_POS:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         if LengthUnit == 0:
           fac = 1
@@ -120,13 +120,11 @@ class Snap:
         self.fields['z'] = np.append(self.fields['z'], pos[2::3])
         del pos
         self.file.seek(self.nbytes-3*ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read velocities
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_VEL:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = 1 / np.sqrt(1 + self.params['redshift'])
         # Read values
@@ -136,24 +134,20 @@ class Snap:
         self.fields['vz'] = np.append(self.fields['vz'], vel[2::3])
         del vel
         self.file.seek(self.nbytes-3*ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read IDs
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_ID:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         id = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
         self.fields['id'] = np.append(self.fields['id'], id)
         del id
         self.file.seek(self.nbytes-ngas*4,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read mass
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_MASS:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = UNIT_MASS / SOLAR_MASS / self.params['hubbleparam']
         # Read values
@@ -161,13 +155,11 @@ class Snap:
         self.fields['mass'] = np.append(self.fields['mass'], mass)
         del mass
         self.file.seek(self.nbytes-ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read energy
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_U:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = UNIT_ENERGY / UNIT_MASS
         # Read values
@@ -175,13 +167,11 @@ class Snap:
         self.fields['u'] = np.append(self.fields['u'], u)
         del u
         self.file.seek(self.nbytes-ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read density
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_RHO:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = UNIT_MASS / UNIT_LENGTH**3 * (1 + self.params['redshift'])**3 * self.params['hubbleparam']**2
         # Read values
@@ -189,13 +179,11 @@ class Snap:
         self.fields['rho'] = np.append(self.fields['rho'], rho)
         del rho
         self.file.seek(self.nbytes-ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read volume
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_VOL:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         if LengthUnit == 0:
           fac = 1
@@ -214,13 +202,11 @@ class Snap:
         self.fields['vol'] = np.append(self.fields['vol'], vol)
         del vol
         self.file.seek(self.nbytes-ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read delaunay
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_DELAUNAY:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         if LengthUnit == 0:
           fac = 1
@@ -239,13 +225,11 @@ class Snap:
         self.fields['delaunay'] = np.append(self.fields['delaunay'], delaunay)
         del delaunay
         self.file.seek(self.nbytes-ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read gravitational acceleration
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_GRAVACC:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = (1 + self.params['redshift'])**(-2)
         # Read values
@@ -255,13 +239,11 @@ class Snap:
         self.fields['gravaccz'] = np.append(self.fields['gravaccz'], gravacc[2::3])
         del gravacc
         self.file.seek(self.nbytes-3*ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read pressure gradient
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_GRADP:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = (1 + self.params['redshift'])**4 * self.params['hubbleparam']**3
         # Read values
@@ -271,33 +253,27 @@ class Snap:
         self.fields['gradpz'] = np.append(self.fields['gradpz'], gradp[2::3])
         del gradp
         self.file.seek(self.nbytes-3*ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read chemistry
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_CHEM:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         chem = np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
         self.fields['abHM'] = np.append(self.fields['abHM'], chem[0::3])
         self.fields['abH2'] = np.append(self.fields['abH2'], chem[1::3])
         self.fields['abHII'] = np.append(self.fields['abHII'], chem[2::3])
         del chem
         self.file.seek(self.nbytes-3*ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read gamma
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
       if IO_GAMMA:
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         gamma = np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
         self.fields['gamma'] = np.append(self.fields['gamma'], gamma)
         del gamma
         self.file.seek(self.nbytes-ngas*8,1)
-      else:
-        self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       self.file.close()
 

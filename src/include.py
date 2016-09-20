@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 from constants import *
 from fields import *
 from params import *
-from mpi4py import MPI
+#from mpi4py import MPI
 import numpy as np
 import h5py
 import math
