@@ -1,8 +1,8 @@
 # build
-build/
+#build/
 
 .DS_Store
 
-src/*.py[cx]
-src/*.so
+#src/*.py[cx]
+#src/*.so
 
