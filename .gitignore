@@ -1,8 +1,16 @@
 # build
 build/
 
+# OSX files
 .DS_Store
 
+# Compiled files
 src/*.pyc
 src/*.so
+src/cutils.c
 
+# PDF files
+*.pdf
+
+# Jupyter notebook checkpoints
+*.ipynb_checkpoints

@@ -231,7 +231,8 @@ class Snap:
       if IO_GRAVACC:
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
-        fac = (1 + self.params['redshift'])**(-2)
+        # fac = (1 + self.params['redshift'])**(-2)
+        fac = UNIT_LENGTH / UNIT_TIME**2.
         # Read values
         gravacc = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
         self.fields['gravaccx'] = np.append(self.fields['gravaccx'], gravacc[0::3])
@@ -246,6 +247,7 @@ class Snap:
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         # Convert units
         fac = (1 + self.params['redshift'])**4 * self.params['hubbleparam']**3
+        fac *= UNIT_MASS / UNIT_LENGTH**2. / UNIT_TIME**2.
         # Read values
         gradp = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
         self.fields['gradpx'] = np.append(self.fields['gradpx'], gradp[0::3])
