@@ -171,7 +171,7 @@ class Snap:
         self.fields['id'] = np.append(self.fields['id'], id)
         self.file.seek(self.nbytes-(ngas+nsinks)*4,1)
         if nsinks:
-          id = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
+          id = np.fromfile(self.file, dtype=np.dtype('i'), count=nsinks)
           self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], id)
         del id
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
@@ -212,29 +212,6 @@ class Snap:
         rho = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
         self.fields['rho'] = np.append(self.fields['rho'], rho)
         del rho
-        self.file.seek(self.nbytes-ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-
-      # Read volume
-      if IO_VOL:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        if LengthUnit == 0:
-          fac = 1
-        elif LengthUnit == 1:
-          fac = 1e9
-        elif LengthUnit == 2:
-          fac = (UNIT_LENGTH / ASTRONOMICAL_UNIT)**3
-        else:
-          print 'Length unit not implemented, we will assume pc'
-          fac = 1
-        if not ComovingUnits:
-          fac /= (1 + self.params['redshift'])**3
-        fac /= self.params['hubbleparam']**3
-        # Read values
-        vol = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
-        self.fields['vol'] = np.append(self.fields['vol'], vol)
-        del vol
         self.file.seek(self.nbytes-ngas*8,1)
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
@@ -338,7 +315,14 @@ class Snap:
       self.fields['nh'] = self.fields['rho'] * HYDROGEN_MASSFRAC / PROTONMASS
 
     if IO_VOL:
-      self.fields['hsml'] = (3.*self.fields['vol']/4./np.pi)**(1./3.)
+      if LengthUnit == 0:
+        fac = UNIT_LENGTH
+      elif LengthUnit == 1:
+        fac = UNIT_LENGTH / 3.
+      elif LengthUnit == 2:
+        fac = ASTRONOMICAL_UNIT
+      self.fields['vol'] = self.fields['mass']  * SOLAR_MASS / self.fields['rho']
+      self.fields['hsml'] = (3.*self.fields['vol']/4./np.pi)**(1./3.) / fac
 
     if IO_CHEM:
       abe = self.fields['abHII']

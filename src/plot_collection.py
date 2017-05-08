@@ -212,7 +212,7 @@ class PlotCollection:
         MyImage.calculate_image(MySnap, field, ImgWidth=ImgWidth)
     
         idx_ax = nsnaps * idx_field + idx_snap
-        # vmin, vmax = np.min(MyImage.img), np.max(MyImage.img)
+        vmin, vmax = np.min(MyImage.img), np.max(MyImage.img)
         im = grid[idx_ax].imshow(MyImage.img, cmap = get_colormap(field), extent = [0, MyImage.xbins, 0, MyImage.ybins], vmin = vmin, vmax = vmax)
         if len(MySnap.new_fields['sinks']['id']) > 0:
           x_sinks = MyImage.xbins / 2. + MyImage.xbins * MySnap.new_fields['sinks']['x'] / MyImage.width
@@ -243,6 +243,8 @@ class PlotCollection:
           grid[idx_ax].text(MyImage.xbins/10., MyImage.ybins/10., '%.2f yr' %(MySnap.params['time']*UNIT_TIME/SEC_PER_YEAR), fontsize=36, color='w')
         if PlotSize:
           grid[idx_ax].text(MyImage.xbins*(1-2.5/10), MyImage.ybins*(1-1./10), '%i au' %ImgWidth, fontsize=36, color='w')
+        grid[idx_ax].set_xlim(0, MyImage.xbins)
+        grid[idx_ax].set_ylim(0, MyImage.ybins)
         grid[idx_ax].set_xticklabels([])
         grid[idx_ax].set_yticklabels([])
         if nfields == 1 and idx_snap == 0:
