@@ -136,14 +136,13 @@ class Snap:
         self.fields['x'] = np.append(self.fields['x'], pos[0::3])
         self.fields['y'] = np.append(self.fields['y'], pos[1::3])
         self.fields['z'] = np.append(self.fields['z'], pos[2::3])
-        del pos
         self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
         if nsinks:
-          sink_pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
-          self.new_fields['sinks']['x'] = np.append(self.new_fields['sinks']['x'], sink_pos[0::3])
-          self.new_fields['sinks']['y'] = np.append(self.new_fields['sinks']['y'], sink_pos[1::3])
-          self.new_fields['sinks']['z'] = np.append(self.new_fields['sinks']['z'], sink_pos[2::3])
-          del sink_pos
+          pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
+          self.new_fields['sinks']['x'] = np.append(self.new_fields['sinks']['x'], pos[0::3])
+          self.new_fields['sinks']['y'] = np.append(self.new_fields['sinks']['y'], pos[1::3])
+          self.new_fields['sinks']['z'] = np.append(self.new_fields['sinks']['z'], pos[2::3])
+        del pos
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read velocities
@@ -156,14 +155,13 @@ class Snap:
         self.fields['vx'] = np.append(self.fields['vx'], vel[0::3])
         self.fields['vy'] = np.append(self.fields['vy'], vel[1::3])
         self.fields['vz'] = np.append(self.fields['vz'], vel[2::3])
-        del vel
         self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
         if nsinks:
-          sink_vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
-          self.new_fields['sinks']['vx'] = np.append(self.new_fields['sinks']['vx'], sink_vel[0::3])
-          self.new_fields['sinks']['vy'] = np.append(self.new_fields['sinks']['vy'], sink_vel[1::3])
-          self.new_fields['sinks']['vz'] = np.append(self.new_fields['sinks']['vz'], sink_vel[2::3])
-          del sink_vel
+          vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
+          self.new_fields['sinks']['vx'] = np.append(self.new_fields['sinks']['vx'], vel[0::3])
+          self.new_fields['sinks']['vy'] = np.append(self.new_fields['sinks']['vy'], vel[1::3])
+          self.new_fields['sinks']['vz'] = np.append(self.new_fields['sinks']['vz'], vel[2::3])
+        del vel
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read IDs
@@ -171,12 +169,11 @@ class Snap:
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         id = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
         self.fields['id'] = np.append(self.fields['id'], id)
-        del id
         self.file.seek(self.nbytes-(ngas+nsinks)*4,1)
         if nsinks:
-          sink_id = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
-          self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], sink_id)
-          del sink_id
+          id = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
+          self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], id)
+        del id
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read mass
@@ -187,12 +184,11 @@ class Snap:
         # Read values
         mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
         self.fields['mass'] = np.append(self.fields['mass'], mass)
-        del mass
         self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
         if nsinks:
-          sink_mass = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
-          self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], sink_mass)
-          del sink_mass
+          mass = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
+          self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], mass)
+        del mass
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       # Read energy
