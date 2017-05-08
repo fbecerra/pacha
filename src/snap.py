@@ -8,6 +8,7 @@ class Snap:
     self.fields = dict()
     self.new_fields = dict()
     self.new_fields['sinks'] = dict()
+    self.new_fields['dm'] = dict()
     self.derived_fields = dict()
     self.quantities = dict()
     self.keys = np.array([])
@@ -34,7 +35,7 @@ class Snap:
     self.params['hubbleparam'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
     self.file.close()
 
-  def read_fields(self, snapbase):
+  def read_fields(self, snapbase, read_dm=False):
     # Number of sinks
     nsinks = self.params['npartall'][5]
 
@@ -44,6 +45,10 @@ class Snap:
       self.fields['y'] = np.array([], dtype = np.float64)
       self.fields['z'] = np.array([], dtype = np.float64)
       self.fields['radius'] = np.array([], dtype = np.float64)
+      if read_dm:
+        self.new_fields['dm']['x'] = np.array([], dtype = np.float64)
+        self.new_fields['dm']['y'] = np.array([], dtype = np.float64)
+        self.new_fields['dm']['z'] = np.array([], dtype = np.float64)
       if nsinks:
         self.new_fields['sinks']['x'] = np.array([], dtype = np.float64)
         self.new_fields['sinks']['y'] = np.array([], dtype = np.float64)
@@ -52,16 +57,24 @@ class Snap:
       self.fields['vx'] = np.array([], dtype = np.float64)
       self.fields['vy'] = np.array([], dtype = np.float64)
       self.fields['vz'] = np.array([], dtype = np.float64)
+      if read_dm:
+        self.new_fields['dm']['vx'] = np.array([], dtype = np.float64)
+        self.new_fields['dm']['vy'] = np.array([], dtype = np.float64)
+        self.new_fields['dm']['vz'] = np.array([], dtype = np.float64)
       if nsinks:
         self.new_fields['sinks']['vx'] = np.array([], dtype = np.float64)
         self.new_fields['sinks']['vy'] = np.array([], dtype = np.float64)
         self.new_fields['sinks']['vz'] = np.array([], dtype = np.float64)
     if IO_ID:
       self.fields['id'] = np.array([], dtype = np.int64)
+      if read_dm:
+        self.new_fields['dm']['id'] = np.array([], dtype = np.float64)
       if nsinks:
         self.new_fields['sinks']['id'] = np.array([], dtype = np.float64)
     if IO_MASS:
       self.fields['mass'] = np.array([], dtype = np.float64)
+      if read_dm:
+        self.new_fields['dm']['mass'] = np.array([], dtype = np.float64)
       if nsinks:
         self.new_fields['sinks']['mass'] = np.array([], dtype = np.float64)
     if IO_U:
@@ -113,7 +126,9 @@ class Snap:
       self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
       ngas = self.npart[0]
+      ndm = self.npart[1]
       nsinks = self.npart[5]
+      # [ngas, ndm, _, _, _, nsinks] = self.npart
 
       # Read positions
       if IO_POS:
@@ -136,7 +151,14 @@ class Snap:
         self.fields['x'] = np.append(self.fields['x'], pos[0::3])
         self.fields['y'] = np.append(self.fields['y'], pos[1::3])
         self.fields['z'] = np.append(self.fields['z'], pos[2::3])
-        self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
+        if read_dm:
+          pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ndm)
+          self.new_fields['dm']['x'] = np.append(self.new_fields['dm']['x'], pos[0::3])
+          self.new_fields['dm']['y'] = np.append(self.new_fields['dm']['y'], pos[1::3])
+          self.new_fields['dm']['z'] = np.append(self.new_fields['dm']['z'], pos[2::3])
+          self.file.seek(self.nbytes-3*(ngas+ndm+nsinks)*8,1)
+        else:
+          self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
         if nsinks:
           pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
           self.new_fields['sinks']['x'] = np.append(self.new_fields['sinks']['x'], pos[0::3])
@@ -155,7 +177,14 @@ class Snap:
         self.fields['vx'] = np.append(self.fields['vx'], vel[0::3])
         self.fields['vy'] = np.append(self.fields['vy'], vel[1::3])
         self.fields['vz'] = np.append(self.fields['vz'], vel[2::3])
-        self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
+        if read_dm:
+          vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ndm)
+          self.new_fields['dm']['vx'] = np.append(self.new_fields['dm']['vx'], vel[0::3])
+          self.new_fields['dm']['vy'] = np.append(self.new_fields['dm']['vy'], vel[1::3])
+          self.new_fields['dm']['vz'] = np.append(self.new_fields['dm']['vz'], vel[2::3])
+          self.file.seek(self.nbytes-3*(ngas+ndm+nsinks)*8,1)
+        else:
+          self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
         if nsinks:
           vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
           self.new_fields['sinks']['vx'] = np.append(self.new_fields['sinks']['vx'], vel[0::3])
@@ -169,7 +198,12 @@ class Snap:
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
         id = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
         self.fields['id'] = np.append(self.fields['id'], id)
-        self.file.seek(self.nbytes-(ngas+nsinks)*4,1)
+        if read_dm:
+          id = np.fromfile(self.file, dtype=np.dtype('i'), count=3*ndm)
+          self.new_fields['dm']['id'] = np.append(self.new_fields['dm']['id'], id)
+          self.file.seek(self.nbytes-(ngas+ndm+nsinks)*4,1)
+        else:
+          self.file.seek(self.nbytes-(ngas+nsinks)*4,1)
         if nsinks:
           id = np.fromfile(self.file, dtype=np.dtype('i'), count=nsinks)
           self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], id)
@@ -184,7 +218,12 @@ class Snap:
         # Read values
         mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
         self.fields['mass'] = np.append(self.fields['mass'], mass)
-        self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
+        if read_dm:
+          mass = np.fromfile(self.file, dtype=np.dtype('d'), count=ndm)
+          self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
+          self.file.seek(self.nbytes-(ngas+ndm+nsinks)*8,1)
+        else:
+          self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
         if nsinks:
           mass = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
           self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], mass)
@@ -436,6 +475,12 @@ class Snap:
     self.fields['y'] -= self.Center[1]
     self.fields['z'] -= self.Center[2]
 
+    #Update DM positions
+    if read_dm:
+      self.new_fields['dm']['x'] -= self.Center[0]
+      self.new_fields['dm']['y'] -= self.Center[1]
+      self.new_fields['dm']['z'] -= self.Center[2]
+
     # Update sink positions
     if len(self.new_fields['sinks']['id']) > 0:
       self.new_fields['sinks']['x'] -= self.Center[0]
@@ -555,6 +600,27 @@ class Snap:
       self.new_fields['sinks']['vy'] = vy_new_sink
       self.new_fields['sinks']['vz'] = vz_new_sink
       del x_new_sink, y_new_sink, z_new_sink, vx_new_sink, vy_new_sink, vz_new_sink
+
+    if read_dm:
+      x_dm, y_dm, z_dm = self.new_fields['dm']['x'], self.new_fields['dm']['y'], self.new_fields['dm']['z']
+      vx_dm, vy_dm, vz_dm = self.new_fields['dm']['vx'], self.new_fields['dm']['vy'], self.new_fields['dm']['vz']
+
+      x_new_dm = self.params['rot12'][0][0] * x_dm + self.params['rot12'][0][1] * y_dm + self.params['rot12'][0][2] * z_dm
+      y_new_dm = self.params['rot12'][1][0] * x_dm + self.params['rot12'][1][1] * y_dm + self.params['rot12'][1][2] * z_dm
+      z_new_dm = self.params['rot12'][2][0] * x_dm + self.params['rot12'][2][1] * y_dm + self.params['rot12'][2][2] * z_dm
+      vx_new_dm = self.params['rot12'][0][0] * vx_dm + self.params['rot12'][0][1] * vy_dm + self.params['rot12'][0][2] * vz_dm
+      vy_new_dm = self.params['rot12'][1][0] * vx_dm + self.params['rot12'][1][1] * vy_dm + self.params['rot12'][1][2] * vz_dm
+      vz_new_dm = self.params['rot12'][2][0] * vx_dm + self.params['rot12'][2][1] * vy_dm + self.params['rot12'][2][2] * vz_dm
+      del x_dm, y_dm, z_dm
+      del vx_dm, vy_dm, vz_dm
+
+      self.new_fields['dm']['x'] = x_new_dm
+      self.new_fields['dm']['y'] = y_new_dm
+      self.new_fields['dm']['z'] = z_new_dm
+      self.new_fields['dm']['vx'] = vx_new_dm
+      self.new_fields['dm']['vy'] = vy_new_dm
+      self.new_fields['dm']['vz'] = vz_new_dm
+      del x_new_dm, y_new_dm, z_new_dm, vx_new_dm, vy_new_dm, vz_new_dm
 
   def calculate_fields(self, field):
 
