@@ -199,7 +199,7 @@ class Snap:
         id = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
         self.fields['id'] = np.append(self.fields['id'], id)
         if read_dm:
-          id = np.fromfile(self.file, dtype=np.dtype('i'), count=3*ndm)
+          id = np.fromfile(self.file, dtype=np.dtype('i'), count=ndm)
           self.new_fields['dm']['id'] = np.append(self.new_fields['dm']['id'], id)
           self.file.seek(self.nbytes-(ngas+ndm+nsinks)*4,1)
         else:
