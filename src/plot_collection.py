@@ -214,6 +214,12 @@ class PlotCollection:
         idx_ax = nsnaps * idx_field + idx_snap
         # vmin, vmax = np.min(MyImage.img), np.max(MyImage.img)
         im = grid[idx_ax].imshow(MyImage.img, cmap = get_colormap(field), extent = [0, MyImage.xbins, 0, MyImage.ybins], vmin = vmin, vmax = vmax)
+        if len(MySnap.new_fields['sinks']['id']) > 0:
+          x_sinks = MyImage.xbins / 2. + MyImage.xbins * MySnap.new_fields['sinks']['x'] / MyImage.width
+          y_sinks = MyImage.ybins / 2. + MyImage.ybins * MySnap.new_fields['sinks']['y'] / MyImage.height
+          for cx, cy in zip(x_sinks, y_sinks):
+            if ((cx > 0) & (cx < MyImage.xbins) & (cy > 0) & (cy < MyImage.ybins)):
+              grid[idx_ax].plot(cx, cy, 'w+', ms=5, mew=3)
         if PlotProto:
           f = h5py.File('/scratch/02563/fbecerra/paha/protostars/'+file+'.hdf5', 'r')
           for key in f.keys():
