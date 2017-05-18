@@ -1,5 +1,6 @@
 
 from . import snap
+from . import fof
 from . import radial
 from . import utils
 from . import image
