@@ -219,13 +219,13 @@ class Snap:
         mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
         self.fields['mass'] = np.append(self.fields['mass'], mass)
         if self.read_dm:
-          mass = np.fromfile(self.file, dtype=np.dtype('d'), count=ndm)
+          mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ndm)
           self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
           self.file.seek(self.nbytes-(ngas+ndm+nsinks)*8,1)
         else:
           self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
         if nsinks:
-          mass = np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
+          mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
           self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], mass)
         del mass
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
