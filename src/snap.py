@@ -127,10 +127,8 @@ class Snap:
       self.file.seek(self.nbytes,1)
       self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
 
-      ngas = self.npart[0]
-      ndm = self.npart[1]
-      nsinks = self.npart[5]
-      # [ngas, ndm, _, _, _, nsinks] = self.npart
+      [ngas, nhalo, ndisk, nstars, nboundary, nsinks] = self.npart
+      ndm = nhalo + ndisk + nstars
 
       # Read positions
       if IO_POS:
