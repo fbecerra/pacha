@@ -70,9 +70,9 @@ class Snap:
     if IO_ID:
       self.fields['id'] = np.array([], dtype = np.int64)
       if self.read_dm:
-        self.new_fields['dm']['id'] = np.array([], dtype = np.float64)
+        self.new_fields['dm']['id'] = np.array([], dtype = np.int64)
       if nsinks:
-        self.new_fields['sinks']['id'] = np.array([], dtype = np.float64)
+        self.new_fields['sinks']['id'] = np.array([], dtype = np.int64)
     if IO_MASS:
       self.fields['mass'] = np.array([], dtype = np.float64)
       if self.read_dm:
