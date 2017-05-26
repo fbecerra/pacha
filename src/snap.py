@@ -366,7 +366,7 @@ class Snap:
       if LengthUnit == 0:
         fac = UNIT_LENGTH
       elif LengthUnit == 1:
-        fac = UNIT_LENGTH / 3.
+        fac = UNIT_LENGTH / 1e3
       elif LengthUnit == 2:
         fac = ASTRONOMICAL_UNIT
       self.fields['vol'] = self.fields['mass']  * SOLAR_MASS / self.fields['rho']
