@@ -219,9 +219,18 @@ class Snap:
         mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
         self.fields['mass'] = np.append(self.fields['mass'], mass)
         if self.read_dm:
-          mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ndm)
-          self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
-          self.file.seek(self.nbytes-(ngas+ndm+nsinks)*8,1)
+          ndmpart_total = 0
+          for idx in xrange(1, self.params['nsnaptypes']):
+            ndmpart = self.params['npartall'][idx]
+            partmass = self.params['masstable'][idx]
+            if partmass:
+              mass = fac * partmass * np.ones(ndmpart, dtype = np.float64)
+              self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
+#            else:
+#              mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ndmpart)
+#              ndmpart_total += ndmpart
+#            self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
+          self.file.seek(self.nbytes-(ngas+ndmpart_total+nsinks)*8,1)
         else:
           self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
         if nsinks:
