@@ -174,7 +174,7 @@ class PlotCollection:
     grid = ImageGrid(self.fig, 111, nrows_ncols = [nrows, ncols], axes_pad = 0.0, label_mode='L', share_all = False,
                      cbar_location = 'right', cbar_mode = cbar_mode, cbar_pad = '5%', cbar_size = '5%')
    
-    vmin, vmax = 13, 20.5
+    #vmin, vmax = 13, 20.5
  
     for idx_snap in range(nsnaps):
     
@@ -242,7 +242,9 @@ class PlotCollection:
         if PlotTime:
           grid[idx_ax].text(MyImage.xbins/10., MyImage.ybins/10., '%.2f yr' %(MySnap.params['time']*UNIT_TIME/SEC_PER_YEAR), fontsize=36, color='w')
         if PlotSize:
-          grid[idx_ax].text(MyImage.xbins*(1-2.5/10), MyImage.ybins*(1-1./10), '%i au' %ImgWidth, fontsize=36, color='w')
+          grid[idx_ax].text(MyImage.xbins*(1-2.5/10), MyImage.ybins*(1-1./10), '%i pc' %(ImgWidth*1e3), fontsize=36, color='w')
+        #circ = pl.Circle((MyImage.xbins/2, MyImage.ybins/2), radius=MyImage.xbins*2e-3/ImgWidth, edgecolor='white', linestyle='dashed', fill=False)
+        #grid[idx_ax].add_patch(circ)
         grid[idx_ax].set_xlim(0, MyImage.xbins)
         grid[idx_ax].set_ylim(0, MyImage.ybins)
         grid[idx_ax].set_xticklabels([])
@@ -383,6 +385,8 @@ class PlotCollection:
     nsizes = len(sizes)
     nfields = len(fields)
     nrows, ncols = nfields, nsizes
+    vmin = np.zeros(nfields)
+    vmax = np.zeros(nfields)
     cbar_mode = 'edge'
     grid = ImageGrid(self.fig, 111, nrows_ncols = [nrows, ncols], axes_pad = 0.0, label_mode='all', share_all = False,
                      cbar_location = 'right', cbar_mode = cbar_mode, cbar_pad = '5%', cbar_size = '5%')
@@ -395,9 +399,15 @@ class PlotCollection:
         MyImage = Image()
         MyImage.calculate_image(MySnap, field, ImgWidth=size)
 
+        if idx_size == 0:
+          vmin[idx_field] = np.min(MyImage.img)
+          vmax[idx_field] = np.max(MyImage.img)
+          #vmin[0] = 0.1
+          #vmax[0] = 10
+
         idx_ax = nsizes * idx_field + idx_size
-        im = grid[idx_ax].imshow(MyImage.img, cmap = get_colormap(field), extent = [0, MyImage.xbins, 0, MyImage.ybins], vmin = np.min(MyImage.img), vmax = np.max(MyImage.img))
-        grid[idx_ax].text(MyImage.xbins/10., MyImage.ybins/10., '%i au' %size, fontsize=36, color='w')
+        im = grid[idx_ax].imshow(MyImage.img, cmap = get_colormap(field), extent = [0, MyImage.xbins, 0, MyImage.ybins], vmin = vmin[idx_field], vmax = vmax[idx_field])
+        grid[idx_ax].text(MyImage.xbins/10., MyImage.ybins/10., '%i pc' %(size*1e3), fontsize=36, color='w')
         grid[idx_ax].set_xticklabels([])
         grid[idx_ax].set_yticklabels([])
         if ((idx_ax + 1) % nsizes != 0 ):
@@ -414,6 +424,9 @@ class PlotCollection:
           grid[idx_ax].set_xlim(0, MyImage.xbins)
           grid[idx_ax].set_ylim(0, MyImage.ybins)
 
+#        if idx_size == 1:
+#          circ = pl.Circle((MyImage.xbins/2, MyImage.ybins/2), radius=MyImage.xbins*0.18e-3/size, edgecolor='k', linestyle='dashed', fill=False)
+#          grid[idx_ax].add_patch(circ)
 #        if nfields == 1 and idx_size == 0:
 #          cb = grid.cbar_axes[idx_ax].colorbar(im)
 #          cb.set_label_text(get_label(field), fontsize = 52)

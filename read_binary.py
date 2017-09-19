@@ -5,23 +5,93 @@ import numpy as np
 import pylab as pl
 import time
 
-#path = '/scratch/00025/tgreif/ah1dm/snapdir_005/'
-#file = 'ah1dm_005'
-
-path = '/scratch/00025/tgreif/ah1w3/snapdir_001/'
-file = 'ah1w3_001'
-
-snapbase = path+file
+path = '/n/hernquistfs2/fbecerra/'
+base = 'nahw1tgs2'
+#base = 'sink_test'
+#base = 'nahw1'
 
 start = time.time()
-MySnap = pr.snap.Snap()
-MySnap.read_header(snapbase)
-#MySnap.read_fields(snapbase)
-print 'Number of particles: ', MySnap.params['npartall'], np.sum(MySnap.params['npartall'])
-#print 'Mass resolution:', np.min(MySnap.fields['mass']), np.max(MySnap.fields['mass'])
-print MySnap.params['masstable']*pr.constants.UNIT_MASS/pr.constants.SOLAR_MASS/MySnap.params['hubbleparam']
+
+def print_minmax(array):
+  print np.min(array), np.max(array)
+
+###f = open('./outputs/sink_mass_'+base+'.txt', 'w')
+
+for snap in np.arange(149, 150): 
+  print 'Snapshot: ', snap
+  snapbase = path + base + '/snapdir_%03i/' %snap + base + '_%03i' %snap
+#  snapbase = '/n/home00/fmarinacci/mvogelsfs1/SINKS/output5/snapdir_%03i/' %snap + base + '_%03i' %snap
+  MySnap = pr.snap.Snap()
+  MySnap.read_header(snapbase)
+  #print  MySnap.params['time']
+  MySnap.read_fields(snapbase)
+
+
+  #print MySnap.params['masstable']*pr.constants.UNIT_MASS/pr.constants.SOLAR_MASS/MySnap.params['hubbleparam']
+  print_minmax(MySnap.sinks['id'])
+  print_minmax(MySnap.sinks['mass'])
+  print_minmax(MySnap.fields['id'])
+  print_minmax(MySnap.fields['mass'])
+
+  zeroids = np.where(MySnap.fields['id'] == 0)[0]
+  print len(zeroids)
+  ###try:
+  ###  MySnap.sinks['id']
+  ###except:
+  ###  print 'No sinks'
+  ###  continue
+  ###for idx, id in enumerate(MySnap.sinks['id']):
+  ###  f.write(str(MySnap.params['time']) + ' ' + str(id) + ' ' + str(MySnap.sinks['mass'][idx]) + '\n')
+
+  ####### Jeans number ####
+  ####everypart = 50
+  ####MySnap.calculate_fields('cs')
+  ####MySnap.calculate_fields('tff')
+  ####jeans_length = MySnap.derived_fields['cs'] * 1e5 * MySnap.derived_fields['tff']
+  ####cell_size = MySnap.fields['hsml'] 
+  #####idx = np.where((MySnap.fields['mass'] > 0) & (MySnap.fields['allowref'] == 0))[0]
+  ####idx = np.where(MySnap.fields['mass'] > 0)[0]
+  ####jeans_number = jeans_length[idx] / cell_size[idx]
+  ####density = MySnap.fields['nh'][idx]
+
+  ####try:
+  ####  xsink, ysink, zsink = MySnap.sinks['x'][0], MySnap.sinks['y'][0], MySnap.sinks['z'][0]
+  ####except:
+  ####  max_nh = np.argmax(MySnap.fields['nh'])
+  ####  xsink, ysink, zsink = MySnap.fields['x'][max_nh],  MySnap.fields['y'][max_nh],  MySnap.fields['z'][max_nh]
+  ####x, y, z = MySnap.fields['x'][idx], MySnap.fields['y'][idx], MySnap.fields['z'][idx]
+  ####dist_to_sink = np.sqrt((x-xsink)**2. + (y-ysink)**2. + (z-zsink)**2.)
+
+  ####fig = pl.figure()
+  #####pl.loglog(jeans_number[0::everypart], density[0::everypart], ',', alpha=0.5)
+  #####pl.loglog(dist_to_sink[0::everypart], density[0::everypart], ',', alpha=0.5)
+  ####pl.loglog(dist_to_sink[0::everypart], MySnap.fields['mass'][idx][0::everypart], ',', alpha=0.5)
+  #####pl.semilogx(dist_to_sink[0::everypart], MySnap.fields['allowref'][idx][0::everypart], ',', alpha=0.5)
+  #####fig.savefig('./images/jeans_number_output4_%03i.pdf' %snap, dpi=100)
+  #####fig.savefig('./images/dist_to_sink_massallowref_output5_%03i.pdf' %snap, dpi=100)
+  ####fig.savefig('./images/dist_to_sink_mass_'+base+'_%03i.pdf' %snap, dpi=100)
+  ####pl.xlabel('Distance to sink')
+  ####pl.ylabel('Number density')
+  ####pl.show()
+  ####pl.close()
+
+###f.close()
 end = time.time()
 print 'Total time: %f' %(end - start)
+
+#####plot_fields = ['gravacc']
+#####MyRadial = pr.radial.Radial()
+#####MyRadial.radial_profile(MySnap, plot_fields)
+#####fig  = pl.figure()
+#####gravacc = 10**MyRadial.radial['gravacc'] * pr.constants.UNIT_LENGTH / pr.constants.UNIT_TIME**2 / 1e5 * 1e6 * pr.constants.SEC_PER_YEAR
+#####pl.loglog(10**MyRadial.radial['radius'], gravacc)
+#####fig.savefig('./gravacc_nahw1.pdf', dpi=100)
+#####pl.show()
+#####pl.close()
+###
+###print MyRadial.radial['gravacc']
+###print MyRadial.radial['radius']
+
 #MySnap.center_box()
 #MySnap.rotate_box()
 #

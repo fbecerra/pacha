@@ -97,6 +97,7 @@ class Snap:
       self.fields['gravaccx'] = np.array([], dtype = np.float64)
       self.fields['gravaccy'] = np.array([], dtype = np.float64)
       self.fields['gravaccz'] = np.array([], dtype = np.float64)
+      self.fields['gravacc'] = np.array([], dtype = np.float64)
     if IO_GRADP:
       self.fields['gradpx'] = np.array([], dtype = np.float64)
       self.fields['gradpy'] = np.array([], dtype = np.float64)
@@ -369,8 +370,11 @@ class Snap:
         fac = UNIT_LENGTH / 1e3
       elif LengthUnit == 2:
         fac = ASTRONOMICAL_UNIT
-      self.fields['vol'] = self.fields['mass']  * SOLAR_MASS / self.fields['rho']
+      self.fields['vol'] = self.fields['mass'] * SOLAR_MASS / self.fields['rho']
       self.fields['hsml'] = (3.*self.fields['vol']/4./np.pi)**(1./3.) / fac
+
+    if IO_GRAVACC:
+      self.fields['gravacc'] = np.sqrt(self.fields['gravaccx']**2. + self.fields['gravaccy']**2. + self.fields['gravaccz']**2.)
 
     if IO_CHEM:
       abe = self.fields['abHII']

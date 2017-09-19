@@ -26,7 +26,7 @@ def total_mass(Snap, idx):
 
 def get_colormap(field):
   if field == 'nh':
-    return matplotlib.cm.jet
+    return viridis
   elif field == 'temp':
     return matplotlib.cm.gist_heat
   elif field == 'gravacc':
