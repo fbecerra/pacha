@@ -152,7 +152,7 @@ class Radial:
           del nh
 
         # Radial and rotational velocities
-        if field == 'vrad' or field == 'vrot' or field == 'vturb':
+        if field == 'vrad' or field == 'vrot' or field == 'vturb' or field == 'angmom':
           if IO_VEL:
             for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
               idx = np.where(r_idx == j)[0]
@@ -178,12 +178,14 @@ class Radial:
               if field == 'vrad':
                 self.radial['vrad'][j] = np.sum(mass * (vradx + vrady + vradz) / Snap.fields['radius'][idx]) / totmass
                 del vradx, vrady, vradz
-              if field == 'vrot' or field == 'vturb':
+              if field == 'vrot' or field == 'angmom':
                 angmom_x = np.sum(mass * (y * (vz - vel_cm_z) - z * (vy - vel_cm_y)))
                 angmom_y = np.sum(mass * (z * (vx - vel_cm_x) - x * (vz - vel_cm_z)))
                 angmom_z = np.sum(mass * (x * (vy - vel_cm_y) - y * (vx - vel_cm_x)))
-              if field == 'vrot':
-                self.radial[field][j] = np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / radius / rad_mass
+		if field == 'angmom':
+                  self.radial[field][j] = np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / totmass
+		if field == 'vrot':
+                  self.radial[field][j] = np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / radius / rad_mass
                 del angmom_x, angmom_y, angmom_z
               if field == 'vturb':
                 vradx = vradx / Snap.fields['radius'][idx]
@@ -262,6 +264,48 @@ class Radial:
           fac /= Snap.params['hubbleparam']
 
           self.radial[field] = np.sqrt(GRAVITY * 10**self.radial['enc_mass'] * SOLAR_MASS / (fac * 10**self.radial['radius'])) / 1.0e5
+
+        # Gravitational torque
+        if field == 'taugrav':
+          if IO_GRAVACC:
+            for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
+              idx = np.where(r_idx == j)[0]
+              mass = Snap.fields['mass'][idx]
+              totmass = np.sum(mass)
+              x, y, z = Snap.fields['x'][idx], Snap.fields['y'][idx], Snap.fields['z'][idx]
+              ax, ay, az = Snap.fields['gravaccx'][idx], Snap.fields['gravaccy'][idx], Snap.fields['gravaccz'][idx]
+              taugrav_x = np.sum(mass * (y * az - z * ay))
+              taugrav_y = np.sum(mass * (z * ax - x * az))
+              taugrav_z = np.sum(mass * (x * ay - y * ax))
+              self.radial[field][j] = np.sqrt(taugrav_x**2 + taugrav_y**2 + taugrav_z**2) / totmass
+            del x, y, z
+            del ax, ay, az
+            del taugrav_x, taugrav_y, taugrav_z
+            del mass, totmass
+          else:
+            print 'Gravitational acceleration was not read!'
+
+        # Pressure torque
+        if field == 'taupres':
+          if IO_GRADP:
+            for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
+              idx = np.where(r_idx == j)[0]
+              mass = Snap.fields['mass'][idx]
+              rho = Snap.fields['rho'][idx]
+              totmass = np.sum(mass)
+              x, y, z = Snap.fields['x'][idx], Snap.fields['y'][idx], Snap.fields['z'][idx]
+              ax, ay, az = Snap.fields['gravaccx'][idx], Snap.fields['gravaccy'][idx], Snap.fields['gravaccz'][idx]
+              taupres_x = np.sum(mass * (y * az - z * ay) / rho)
+              taupres_y = np.sum(mass * (z * ax - x * az) / rho)
+              taupres_z = np.sum(mass * (x * ay - y * ax) / rho)
+              self.radial[field][j] = np.sqrt(taupres_x**2 + taupres_y**2 + taupres_z**2) / totmass
+            del x, y, z
+            del ax, ay, az
+            del taupres_x, taupres_y, taupres_z
+            del rho, mass, totmass
+          else:
+            print 'Pressure gradient was not read!'
+
 
         # Toomre's Q parameter
         if field == 'q':
