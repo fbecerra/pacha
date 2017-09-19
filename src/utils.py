@@ -122,11 +122,11 @@ def get_label(field):
   elif field == 'mach':
     label = r'$\mathcal{M}$'
   elif field == 'angmom':
-    label = r'$l\,[?]'
+    label = r'$l\,[?]$'
   elif field == 'taugrav':
-    label = r'$\tau_{\rm grav}\,[?]'
+    label = r'$\tau_{\rm grav}\,[?]$'
   elif field == 'taupres':
-    label = r'$\tau_{\rm pres}\,[?]'
+    label = r'$\tau_{\rm pres}\,[?]$'
   elif field == 'nh':
     label = r'${\rm log}\left(n_{\rm H}/{\rm cm}^{-3}\right)$'
   elif field == 'dnh':
