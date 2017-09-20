@@ -334,7 +334,7 @@ class Radial:
                 del vel_cm_x, vel_cm_y, vel_cm_z
                 del angmom_x, angmom_y, angmom_z, angmomsq
             del x, y, z
-            del ax, ay, az
+            del gradpx, gradpy, gradpz
             del taupres_x, taupres_y, taupres_z
             del rho, mass, totmass
           else:
