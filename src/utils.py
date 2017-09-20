@@ -122,11 +122,30 @@ def get_label(field):
   elif field == 'mach':
     label = r'$\mathcal{M}$'
   elif field == 'angmom':
-    label = r'$l\,[?]$'
+    if LengthUnit == 0:
+      label = r'$l\,[{\rm pc}^2\,{\rm s}^{-1}]$'
+    elif LengthUnit == 1:
+      label = r'$l\,[{\rm kpc}^2\,{\rm s}^{-1}]$'
+    else:
+      label = r'$l\,[{\rm AU}^2\,{\rm s}^{-1}]$'
   elif field == 'taugrav':
-    label = r'$\tau_{\rm grav}\,[?]$'
+    if LengthUnit == 0:
+      label = r'$\tau_{\rm grav}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
+    elif LengthUnit == 1:
+      label = r'$\tau_{\rm grav}\,[{\rm kpc}^2\,{\rm s}^{-2}]$'
+    else:
+      label = r'$\tau_{\rm grav}\,[{\rm AU}^2\,{\rm s}^{-2}]$'
   elif field == 'taupres':
-    label = r'$\tau_{\rm pres}\,[?]$'
+    if LengthUnit == 0:
+      label = r'$\tau_{\rm pres}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
+    elif LengthUnit == 1:
+      label = r'$\tau_{\rm pres}\,[{\rm kpc}^2\,{\rm s}^{-2}]$'
+    else:
+      label = r'$\tau_{\rm pres}\,[{\rm AU}^2\,{\rm s}^{-2}]$'
+  elif field == 'tgrav':
+    label = r'$t_{\rm grav}\,[{\rm s}]$'
+  elif field == 'tpres':
+    label = r'$t_{\rm pres}\,[{\rm s}]]$'
   elif field == 'nh':
     label = r'${\rm log}\left(n_{\rm H}/{\rm cm}^{-3}\right)$'
   elif field == 'dnh':
