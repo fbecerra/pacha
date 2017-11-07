@@ -196,5 +196,7 @@ def get_label(field):
     label = r'${\rm log}\,{\rm Q}$'
   elif field == 'gammie':
     label = r'${\rm log}\left(t_{\rm cool}/3\Omega^{-1} \right)$'
+  elif field == 'infall':
+    label = r'${\rm log}\left(\dot{M}/{\rm M}_\odot\,{\rm yr}^{-1}\right)$'
 
   return label
