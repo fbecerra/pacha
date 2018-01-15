@@ -289,8 +289,8 @@ class Radial:
                 angmom_x = np.sum(mass * (y * (vz - vel_cm_z) - z * (vy - vel_cm_y)))
                 angmom_y = np.sum(mass * (z * (vx - vel_cm_x) - x * (vz - vel_cm_z)))
                 angmom_z = np.sum(mass * (x * (vy - vel_cm_y) - y * (vx - vel_cm_x)))
-                angmomsq = angmom_x**2 + angmom_y**2 + angmom_z**2
- 
+                angmomsq = angmom_x**2. + angmom_y**2. + angmom_z**2.
+
                 self.radial[field][j] = angmomsq / (angmom_x * taugrav_x + angmom_y * taugrav_y + angmom_z * taugrav_z)
                 del vx, vy, vz
                 del vel_cm_x, vel_cm_y, vel_cm_z
@@ -506,6 +506,33 @@ class Radial:
               self.radial_profile(Snap, ['u'])
 #          self.radial[field] = np.log10(10**self.radial['tcool'] * 10**self.radial['omega_rot'] / 3.)
             self.radial[field] = np.log10(10**self.radial['u'] * 10**self.radial['rho'] / self.radial['radial_cool_rate'] * 10**self.radial['omega_rot'] / SEC_PER_YEAR / 3.)
+
+        # Infall rate
+        if field == 'infall':
+          if IO_VEL and IO_RHO:
+            try:
+              self.radial['vrad'][0]
+            except:
+              self.radial_profile(Snap, ['vrad'])
+            try:
+              self.radial['rho'][0]
+            except:
+              self.radial_profile(Snap, ['rho'])
+
+            # Convert units
+            if LengthUnit == 0:
+              fac = UNIT_LENGTH
+            elif LengthUnit == 1:
+              fac = UNIT_LENGTH / 1e3
+            elif LengthUnit == 2:
+              fac = ASTRONOMICAL_UNIT
+            else:
+              print 'Length unit not implemented, we will assume pc'
+              fac = UNIT_LENGTH
+
+            self.radial[field] =  (-4) * np.pi * (fac * 10**self.radial['radius'])**2. * 10**self.radial['rho'] * (self.radial['vrad'] * 1e5) / SOLAR_MASS * SEC_PER_YEAR
+          else:
+            print ' Energy or Density was not read!'
 
   def find_max(self, field):
     # Returns index of cell with maximum value of a field
