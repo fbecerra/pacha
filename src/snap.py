@@ -13,30 +13,52 @@ class Snap:
     self.quantities = dict()
     self.keys = np.array([])
 
-  def read_header(self, snapbase):
+  def read_header(self, snapbase, read_HDF=False):
     # Read header
+    self.read_HDF = read_HDF
     self.params['nsnaptypes'] = 6
-
     self.snapfile = snapbase+'.0'
 
-    self.file = open(self.snapfile, mode = 'rb')
-    self.file.seek(28)
-    self.params['masstable'] = np.fromfile(self.file, dtype= np.dtype('d'), count=self.params['nsnaptypes'])
-    self.params['time'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
-    self.params['redshift'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
-    self.params['flag_sfr'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-    self.params['flag_feedback'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-    self.params['npartall'] = np.fromfile(self.file, dtype= np.dtype('i'), count=self.params['nsnaptypes'])
-    self.params['flag_cooling'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-    self.params['numfiles'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-    self.params['boxsize'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
-    self.params['omega_m'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
-    self.params['omega_lambda'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
-    self.params['hubbleparam'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
-    self.file.close()
+    if self.read_HDF:
 
-  def read_fields(self, snapbase, read_dm=False):
+      self.file = h5py.File(self.snapfile+'.hdf5', 'r')
+
+      self.params['masstable'] = np.array(self.file['Header'].attrs['MassTable'], dtype=np.dtype('d'))
+      self.params['time'] = np.array(self.file['Header'].attrs['Time'], dtype=np.dtype('d'))
+      self.params['redshift'] = np.array(self.file['Header'].attrs['Redshift'], dtype=np.dtype('d'))
+      self.params['flag_sfr'] = np.array(self.file['Header'].attrs['Flag_Sfr'], dtype=np.dtype('i'))
+      self.params['flag_feedback'] = np.array(self.file['Header'].attrs['Flag_Feedback'], dtype=np.dtype('i'))
+      self.params['npartall'] = np.array(self.file['Header'].attrs['NumPart_Total'], dtype=np.dtype('i'))
+      self.params['flag_cooling'] = np.array(self.file['Header'].attrs['Flag_Cooling'], dtype=np.dtype('i'))
+      self.params['numfiles'] = np.array(self.file['Header'].attrs['NumFilesPerSnapshot'], dtype=np.dtype('i'))
+      self.params['boxsize'] = np.array(self.file['Header'].attrs['BoxSize'], dtype=np.dtype('d'))
+      self.params['omega_m'] = np.array(self.file['Header'].attrs['Omega0'], dtype=np.dtype('d'))
+      self.params['omega_lambda'] = np.array(self.file['Header'].attrs['OmegaLambda'], dtype=np.dtype('d'))
+      self.params['hubbleparam'] = np.array(self.file['Header'].attrs['HubbleParam'], dtype=np.dtype('d'))
+
+      self.file.close()
+
+    else:
+
+      self.file = open(self.snapfile, mode = 'rb')
+      self.file.seek(28)
+      self.params['masstable'] = np.fromfile(self.file, dtype= np.dtype('d'), count=self.params['nsnaptypes'])
+      self.params['time'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
+      self.params['redshift'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
+      self.params['flag_sfr'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+      self.params['flag_feedback'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+      self.params['npartall'] = np.fromfile(self.file, dtype= np.dtype('i'), count=self.params['nsnaptypes'])
+      self.params['flag_cooling'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+      self.params['numfiles'] = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+      self.params['boxsize'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
+      self.params['omega_m'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
+      self.params['omega_lambda'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
+      self.params['hubbleparam'] = np.fromfile(self.file, dtype=np.dtype('d'), count=1)[0]
+      self.file.close()
+
+  def read_fields(self, snapbase, read_dm=False, read_HDF=False):
     self.read_dm = read_dm
+    self.read_HDF = read_HDF
 
     # Number of sinks
     nsinks = self.params['npartall'][5]
@@ -81,10 +103,7 @@ class Snap:
         self.new_fields['sinks']['mass'] = np.array([], dtype = np.float64)
     if IO_U:
       self.fields['u'] = np.array([], dtype = np.float64)
-      if IO_CHEM:
-        self.fields['temp'] = np.array([], dtype = np.float64)
-      else:
-        print 'IO_CHEM not selected, we are not calculating temperature! \n'
+      self.fields['temp'] = np.array([], dtype = np.float64)
     if IO_RHO:
       self.fields['rho'] = np.array([], dtype = np.float64)
       self.fields['nh'] = np.array([], dtype = np.float64)
@@ -114,231 +133,343 @@ class Snap:
     try:
       self.params['numfiles']
     except:
-      self.read_header(snapbase)
+      self.read_header(snapbase, read_HDF=self.read_HDF)
 
     # Iterate over files to read all particles
-    for i in range(self.params['numfiles']):
-    
-      self.snapfile = snapbase + '.' + repr(i)
-      self.file = open(self.snapfile, mode = 'rb')
+     ########## vvvvvv HDF vvvvvvvv #########
+    if self.read_HDF:
 
-      self.nbytes = 256 - 6*4
-      self.file.seek(4)
-      self.npart = np.fromfile(self.file, dtype=np.dtype('i'), count=self.params['nsnaptypes'])
-      self.file.seek(self.nbytes,1)
-      self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+      for i in range(self.params['numfiles']):
 
-      [ngas, nhalo, ndisk, nstars, nboundary, nsinks] = self.npart
-      ndm = nhalo + ndisk + nstars
+        self.snapfile = snapbase + '.' + repr(i)
+        self.file = h5py.File(self.snapfile+'.hdf5', 'r')
+        self.npart = np.array(self.file['Header'].attrs['NumPart_ThisFile'], dtype=np.dtype('d'))
 
-      # Read positions
-      if IO_POS:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        if LengthUnit == 0:
-          fac = 1
-        elif LengthUnit == 1:
-          fac = 1e3
-        elif LengthUnit == 2:
-          fac = UNIT_LENGTH / ASTRONOMICAL_UNIT
-        else:
-          print 'Length unit not implemented, we will assume pc'
-          fac = 1
-        if not ComovingUnits:
-          fac /= (1 + self.params['redshift'])
-        fac /= self.params['hubbleparam']
-        # Read values
-        pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
-        self.fields['x'] = np.append(self.fields['x'], pos[0::3])
-        self.fields['y'] = np.append(self.fields['y'], pos[1::3])
-        self.fields['z'] = np.append(self.fields['z'], pos[2::3])
-        if self.read_dm:
-          pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ndm)
-          self.new_fields['dm']['x'] = np.append(self.new_fields['dm']['x'], pos[0::3])
-          self.new_fields['dm']['y'] = np.append(self.new_fields['dm']['y'], pos[1::3])
-          self.new_fields['dm']['z'] = np.append(self.new_fields['dm']['z'], pos[2::3])
-          self.file.seek(self.nbytes-3*(ngas+ndm+nsinks)*8,1)
-        else:
-          self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
-        if nsinks:
-          pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
-          self.new_fields['sinks']['x'] = np.append(self.new_fields['sinks']['x'], pos[0::3])
-          self.new_fields['sinks']['y'] = np.append(self.new_fields['sinks']['y'], pos[1::3])
-          self.new_fields['sinks']['z'] = np.append(self.new_fields['sinks']['z'], pos[2::3])
-        del pos
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        # Read positions
+        if IO_POS:
+          # Convert units
+          if LengthUnit == 0:
+            fac = 1
+          elif LengthUnit == 1:
+            fac = 1e3
+          elif LengthUnit == 2:
+            fac = UNIT_LENGTH / ASTRONOMICAL_UNIT
+          else:
+            print 'Length unit not implemented, we will assume pc'
+            fac = 1
+          if not ComovingUnits:
+            fac /= (1 + self.params['redshift'])
+          fac /= self.params['hubbleparam']
+          # Read values
+          pos = fac * np.array(self.file['PartType0/Coordinates'], dtype=np.dtype('d'))
+          self.fields['x'] = np.append(self.fields['x'], pos[:,0])
+          self.fields['y'] = np.append(self.fields['y'], pos[:,1])
+          self.fields['z'] = np.append(self.fields['z'], pos[:,2])
+          if self.read_dm:
+            pos = fac * np.array(self.file['PartType1/Coordinates'], dtype=np.dtype('d'))
+            self.new_fields['dm']['x'] = np.append(self.new_fields['dm']['x'], pos[:,0])
+            self.new_fields['dm']['y'] = np.append(self.new_fields['dm']['y'], pos[:,1])
+            self.new_fields['dm']['z'] = np.append(self.new_fields['dm']['z'], pos[:,2])
+          if nsinks:
+            pos = fac * np.array(self.file['PartType4/Coordinates'], dtype=np.dtype('d'))
+            self.new_fields['sinks']['x'] = np.append(self.new_fields['sinks']['x'], pos[:,0])
+            self.new_fields['sinks']['y'] = np.append(self.new_fields['sinks']['y'], pos[:,1])
+            self.new_fields['sinks']['z'] = np.append(self.new_fields['sinks']['z'], pos[:,2])
+          del pos
 
-      # Read velocities
-      if IO_VEL:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        fac = 1 / np.sqrt(1 + self.params['redshift'])
-        # Read values
-        vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
-        self.fields['vx'] = np.append(self.fields['vx'], vel[0::3])
-        self.fields['vy'] = np.append(self.fields['vy'], vel[1::3])
-        self.fields['vz'] = np.append(self.fields['vz'], vel[2::3])
-        if self.read_dm:
-          vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ndm)
-          self.new_fields['dm']['vx'] = np.append(self.new_fields['dm']['vx'], vel[0::3])
-          self.new_fields['dm']['vy'] = np.append(self.new_fields['dm']['vy'], vel[1::3])
-          self.new_fields['dm']['vz'] = np.append(self.new_fields['dm']['vz'], vel[2::3])
-          self.file.seek(self.nbytes-3*(ngas+ndm+nsinks)*8,1)
-        else:
-          self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
-        if nsinks:
-          vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
-          self.new_fields['sinks']['vx'] = np.append(self.new_fields['sinks']['vx'], vel[0::3])
-          self.new_fields['sinks']['vy'] = np.append(self.new_fields['sinks']['vy'], vel[1::3])
-          self.new_fields['sinks']['vz'] = np.append(self.new_fields['sinks']['vz'], vel[2::3])
-        del vel
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        # Read velocities
+        if IO_VEL:
+          # Convert units
+          fac = 1 / np.sqrt(1 + self.params['redshift'])
+          # Read values
+          vel = fac * np.array(self.file['PartType0/Velocities'], dtype=np.dtype('d'))
+          self.fields['vx'] = np.append(self.fields['vx'], vel[:,0])
+          self.fields['vy'] = np.append(self.fields['vy'], vel[:,1])
+          self.fields['vz'] = np.append(self.fields['vz'], vel[:,2])
+          if self.read_dm:
+            vel = fac * np.array(self.file['PartType1/Velocities'], dtype=np.dtype('d'))
+            self.new_fields['dm']['vx'] = np.append(self.new_fields['dm']['vx'], vel[:,0])
+            self.new_fields['dm']['vy'] = np.append(self.new_fields['dm']['vy'], vel[:,1])
+            self.new_fields['dm']['vz'] = np.append(self.new_fields['dm']['vz'], vel[:,2])
+          if nsinks:
+            vel = fac * np.array(self.file['PartType4/Velocities'], dtype=np.dtype('d'))
+            self.new_fields['sinks']['vx'] = np.append(self.new_fields['sinks']['vx'], vel[:,0])
+            self.new_fields['sinks']['vy'] = np.append(self.new_fields['sinks']['vy'], vel[:,1])
+            self.new_fields['sinks']['vz'] = np.append(self.new_fields['sinks']['vz'], vel[:,2])
+          del vel
 
-      # Read IDs
-      if IO_ID:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        id = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
-        self.fields['id'] = np.append(self.fields['id'], id)
-        if self.read_dm:
-          id = np.fromfile(self.file, dtype=np.dtype('i'), count=ndm)
-          self.new_fields['dm']['id'] = np.append(self.new_fields['dm']['id'], id)
-          self.file.seek(self.nbytes-(ngas+ndm+nsinks)*4,1)
-        else:
-          self.file.seek(self.nbytes-(ngas+nsinks)*4,1)
-        if nsinks:
-          id = np.fromfile(self.file, dtype=np.dtype('i'), count=nsinks)
-          self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], id)
-        del id
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        # Read IDs
+        if IO_ID:
+          id = np.array(self.file['PartType0/ParticleIDs'], dtype=np.dtype('i'))
+          self.fields['id'] = np.append(self.fields['id'], id)
+          if self.read_dm:
+            id = np.array(self.file['PartType1/ParticleIDs'], dtype=np.dtype('i'))
+            self.new_fields['dm']['id'] = np.append(self.new_fields['dm']['id'], id)
+          if nsinks:
+            id = np.array(self.file['PartType4/ParticleIDs'], dtype=np.dtype('i'))
+            self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], id)
+          del id
 
-      # Read mass
-      if IO_MASS:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        fac = UNIT_MASS / SOLAR_MASS / self.params['hubbleparam']
-        # Read values
-        mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
-        self.fields['mass'] = np.append(self.fields['mass'], mass)
-        if self.read_dm:
-          ndmpart_total = 0
-          for idx in xrange(1, self.params['nsnaptypes']):
-            ndmpart = self.params['npartall'][idx]
-            partmass = self.params['masstable'][idx]
-            if partmass:
-              mass = fac * partmass * np.ones(ndmpart, dtype = np.float64)
-              self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
-#            else:
-#              mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ndmpart)
-#              ndmpart_total += ndmpart
-#            self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
-          self.file.seek(self.nbytes-(ngas+ndmpart_total+nsinks)*8,1)
-        else:
-          self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
-        if nsinks:
-          mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
-          self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], mass)
-        del mass
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        # Read mass
+        if IO_MASS:
+          # Convert units
+          fac = UNIT_MASS / SOLAR_MASS / self.params['hubbleparam']
+          # Read values
+          mass = fac * np.array(self.file['PartType0/Masses'], dtype=np.dtype('d'))
+          self.fields['mass'] = np.append(self.fields['mass'], mass)
+          if self.read_dm:
+            ndmpart = self.npart[1]
+            dmpartmass = self.params['masstable'][1]
+            mass = fac * partmass * np.ones(ndmpart, dtype = np.float64)
+            self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
+          if nsinks:
+            mass = fac * np.array(self.file['PartType4/Masses'], dtype=np.dtype('d'))
+            self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], mass)
+          del mass
 
-      # Read energy
-      if IO_U:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        fac = UNIT_ENERGY / UNIT_MASS
-        # Read values
-        u = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
-        self.fields['u'] = np.append(self.fields['u'], u)
-        del u
-        self.file.seek(self.nbytes-ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        # Read energy
+        if IO_U:
+          # Convert units
+          fac = UNIT_ENERGY / UNIT_MASS
+          # Read values
+          u = fac * np.array(self.file['PartType0/InternalEnergy'], dtype=np.dtype('d'))
+          self.fields['u'] = np.append(self.fields['u'], u)
+          del u
 
-      # Read density
-      if IO_RHO:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        fac = UNIT_MASS / UNIT_LENGTH**3 * (1 + self.params['redshift'])**3 * self.params['hubbleparam']**2
-        # Read values
-        rho = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
-        self.fields['rho'] = np.append(self.fields['rho'], rho)
-        del rho
-        self.file.seek(self.nbytes-ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+        # Read density
+        if IO_RHO:
+          # Convert units
+          fac = UNIT_MASS / UNIT_LENGTH**3 * (1 + self.params['redshift'])**3 * self.params['hubbleparam']**2
+          # Read values
+          rho = fac * np.array(self.file['PartType0/Density'], dtype=np.dtype('d'))
+          self.fields['rho'] = np.append(self.fields['rho'], rho)
+          del rho
 
-      # Read delaunay
-      if IO_DELAUNAY:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        if LengthUnit == 0:
-          fac = 1
-        elif LengthUnit == 1:
-          fac = 1e9
-        elif LengthUnit == 2:
-          fac = (UNIT_LENGTH / ASTRONOMICAL_UNIT)**3
-        else:
-          print 'Length unit not implemented, we will assume pc'
-          fac = 1
-        if not ComovingUnits:
-          fac /= (1 + self.params['redshift'])**3
-        fac /= self.params['hubbleparam']**3
-        # Read values
-        delaunay = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
-        self.fields['delaunay'] = np.append(self.fields['delaunay'], delaunay)
-        del delaunay
-        self.file.seek(self.nbytes-ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+     ############# ^^^^ HDF ^^^^^ #########
+    else:
 
-      # Read gravitational acceleration
-      if IO_GRAVACC:
+      for i in range(self.params['numfiles']):
+      
+        self.snapfile = snapbase + '.' + repr(i)
+        self.file = open(self.snapfile, mode = 'rb')
+  
+        self.nbytes = 256 - 6*4
+        self.file.seek(4)
+        self.npart = np.fromfile(self.file, dtype=np.dtype('i'), count=self.params['nsnaptypes'])
+        self.file.seek(self.nbytes,1)
         self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        # fac = (1 + self.params['redshift'])**(-2)
-        fac = UNIT_LENGTH / UNIT_TIME**2.
-        # Read values
-        gravacc = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
-        self.fields['gravaccx'] = np.append(self.fields['gravaccx'], gravacc[0::3])
-        self.fields['gravaccy'] = np.append(self.fields['gravaccy'], gravacc[1::3])
-        self.fields['gravaccz'] = np.append(self.fields['gravaccz'], gravacc[2::3])
-        del gravacc
-        self.file.seek(self.nbytes-3*ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-
-      # Read pressure gradient
-      if IO_GRADP:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        # Convert units
-        fac = (1 + self.params['redshift'])**4 * self.params['hubbleparam']**3
-        fac *= UNIT_MASS / UNIT_LENGTH**2. / UNIT_TIME**2.
-        # Read values
-        gradp = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
-        self.fields['gradpx'] = np.append(self.fields['gradpx'], gradp[0::3])
-        self.fields['gradpy'] = np.append(self.fields['gradpy'], gradp[1::3])
-        self.fields['gradpz'] = np.append(self.fields['gradpz'], gradp[2::3])
-        del gradp
-        self.file.seek(self.nbytes-3*ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-
-      # Read chemistry
-      if IO_CHEM:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        chem = np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
-        self.fields['abHM'] = np.append(self.fields['abHM'], chem[0::3])
-        self.fields['abH2'] = np.append(self.fields['abH2'], chem[1::3])
-        self.fields['abHII'] = np.append(self.fields['abHII'], chem[2::3])
-        del chem
-        self.file.seek(self.nbytes-3*ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-
-      # Read gamma
-      if IO_GAMMA:
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-        gamma = np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
-        self.fields['gamma'] = np.append(self.fields['gamma'], gamma)
-        del gamma
-        self.file.seek(self.nbytes-ngas*8,1)
-        self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-
-      self.file.close()
-
+  
+        [ngas, nhalo, ndisk, nstars, nboundary, nsinks] = self.npart
+        ndm = nhalo + ndisk + nstars
+  
+        # Read positions
+        if IO_POS:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          if LengthUnit == 0:
+            fac = 1
+          elif LengthUnit == 1:
+            fac = 1e3
+          elif LengthUnit == 2:
+            fac = UNIT_LENGTH / ASTRONOMICAL_UNIT
+          else:
+            print 'Length unit not implemented, we will assume pc'
+            fac = 1
+          if not ComovingUnits:
+            fac /= (1 + self.params['redshift'])
+          fac /= self.params['hubbleparam']
+          # Read values
+          pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
+          self.fields['x'] = np.append(self.fields['x'], pos[0::3])
+          self.fields['y'] = np.append(self.fields['y'], pos[1::3])
+          self.fields['z'] = np.append(self.fields['z'], pos[2::3])
+          if self.read_dm:
+            pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ndm)
+            self.new_fields['dm']['x'] = np.append(self.new_fields['dm']['x'], pos[0::3])
+            self.new_fields['dm']['y'] = np.append(self.new_fields['dm']['y'], pos[1::3])
+            self.new_fields['dm']['z'] = np.append(self.new_fields['dm']['z'], pos[2::3])
+            self.file.seek(self.nbytes-3*(ngas+ndm+nsinks)*8,1)
+          else:
+            self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
+          if nsinks:
+            pos = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
+            self.new_fields['sinks']['x'] = np.append(self.new_fields['sinks']['x'], pos[0::3])
+            self.new_fields['sinks']['y'] = np.append(self.new_fields['sinks']['y'], pos[1::3])
+            self.new_fields['sinks']['z'] = np.append(self.new_fields['sinks']['z'], pos[2::3])
+          del pos
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read velocities
+        if IO_VEL:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          fac = 1 / np.sqrt(1 + self.params['redshift'])
+          # Read values
+          vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
+          self.fields['vx'] = np.append(self.fields['vx'], vel[0::3])
+          self.fields['vy'] = np.append(self.fields['vy'], vel[1::3])
+          self.fields['vz'] = np.append(self.fields['vz'], vel[2::3])
+          if self.read_dm:
+            vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ndm)
+            self.new_fields['dm']['vx'] = np.append(self.new_fields['dm']['vx'], vel[0::3])
+            self.new_fields['dm']['vy'] = np.append(self.new_fields['dm']['vy'], vel[1::3])
+            self.new_fields['dm']['vz'] = np.append(self.new_fields['dm']['vz'], vel[2::3])
+            self.file.seek(self.nbytes-3*(ngas+ndm+nsinks)*8,1)
+          else:
+            self.file.seek(self.nbytes-3*(ngas+nsinks)*8,1)
+          if nsinks:
+            vel = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*nsinks)
+            self.new_fields['sinks']['vx'] = np.append(self.new_fields['sinks']['vx'], vel[0::3])
+            self.new_fields['sinks']['vy'] = np.append(self.new_fields['sinks']['vy'], vel[1::3])
+            self.new_fields['sinks']['vz'] = np.append(self.new_fields['sinks']['vz'], vel[2::3])
+          del vel
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read IDs
+        if IO_ID:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          id = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
+          self.fields['id'] = np.append(self.fields['id'], id)
+          if self.read_dm:
+            id = np.fromfile(self.file, dtype=np.dtype('i'), count=ndm)
+            self.new_fields['dm']['id'] = np.append(self.new_fields['dm']['id'], id)
+            self.file.seek(self.nbytes-(ngas+ndm+nsinks)*4,1)
+          else:
+            self.file.seek(self.nbytes-(ngas+nsinks)*4,1)
+          if nsinks:
+            id = np.fromfile(self.file, dtype=np.dtype('i'), count=nsinks)
+            self.new_fields['sinks']['id'] = np.append(self.new_fields['sinks']['id'], id)
+          del id
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read mass
+        if IO_MASS:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          fac = UNIT_MASS / SOLAR_MASS / self.params['hubbleparam']
+          # Read values
+          mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['mass'] = np.append(self.fields['mass'], mass)
+          if self.read_dm:
+            ndmpart_total = 0
+            for idx in xrange(1, self.params['nsnaptypes']):
+              ndmpart = self.params['npartall'][idx]
+              partmass = self.params['masstable'][idx]
+              if partmass:
+                mass = fac * partmass * np.ones(ndmpart, dtype = np.float64)
+                self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
+  #            else:
+  #              mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ndmpart)
+  #              ndmpart_total += ndmpart
+  #            self.new_fields['dm']['mass'] = np.append(self.new_fields['dm']['mass'], mass)
+            self.file.seek(self.nbytes-(ngas+ndmpart_total+nsinks)*8,1)
+          else:
+            self.file.seek(self.nbytes-(ngas+nsinks)*8,1)
+          if nsinks:
+            mass = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=nsinks)
+            self.new_fields['sinks']['mass'] = np.append(self.new_fields['sinks']['mass'], mass)
+          del mass
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read energy
+        if IO_U:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          fac = UNIT_ENERGY / UNIT_MASS
+          # Read values
+          u = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['u'] = np.append(self.fields['u'], u)
+          del u
+          self.file.seek(self.nbytes-ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read density
+        if IO_RHO:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          fac = UNIT_MASS / UNIT_LENGTH**3 * (1 + self.params['redshift'])**3 * self.params['hubbleparam']**2
+          # Read values
+          rho = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['rho'] = np.append(self.fields['rho'], rho)
+          del rho
+          self.file.seek(self.nbytes-ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read delaunay
+        if IO_DELAUNAY:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          if LengthUnit == 0:
+            fac = 1
+          elif LengthUnit == 1:
+            fac = 1e9
+          elif LengthUnit == 2:
+            fac = (UNIT_LENGTH / ASTRONOMICAL_UNIT)**3
+          else:
+            print 'Length unit not implemented, we will assume pc'
+            fac = 1
+          if not ComovingUnits:
+            fac /= (1 + self.params['redshift'])**3
+          fac /= self.params['hubbleparam']**3
+          # Read values
+          delaunay = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['delaunay'] = np.append(self.fields['delaunay'], delaunay)
+          del delaunay
+          self.file.seek(self.nbytes-ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read gravitational acceleration
+        if IO_GRAVACC:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          # fac = (1 + self.params['redshift'])**(-2)
+          fac = UNIT_LENGTH / UNIT_TIME**2.
+          # Read values
+          gravacc = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
+          self.fields['gravaccx'] = np.append(self.fields['gravaccx'], gravacc[0::3])
+          self.fields['gravaccy'] = np.append(self.fields['gravaccy'], gravacc[1::3])
+          self.fields['gravaccz'] = np.append(self.fields['gravaccz'], gravacc[2::3])
+          del gravacc
+          self.file.seek(self.nbytes-3*ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read pressure gradient
+        if IO_GRADP:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          fac = (1 + self.params['redshift'])**4 * self.params['hubbleparam']**3
+          fac *= UNIT_MASS / UNIT_LENGTH**2. / UNIT_TIME**2.
+          # Read values
+          gradp = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
+          self.fields['gradpx'] = np.append(self.fields['gradpx'], gradp[0::3])
+          self.fields['gradpy'] = np.append(self.fields['gradpy'], gradp[1::3])
+          self.fields['gradpz'] = np.append(self.fields['gradpz'], gradp[2::3])
+          del gradp
+          self.file.seek(self.nbytes-3*ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read chemistry
+        if IO_CHEM:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          chem = np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
+          self.fields['abHM'] = np.append(self.fields['abHM'], chem[0::3])
+          self.fields['abH2'] = np.append(self.fields['abH2'], chem[1::3])
+          self.fields['abHII'] = np.append(self.fields['abHII'], chem[2::3])
+          del chem
+          self.file.seek(self.nbytes-3*ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        # Read gamma
+        if IO_GAMMA:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          gamma = np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['gamma'] = np.append(self.fields['gamma'], gamma)
+          del gamma
+          self.file.seek(self.nbytes-ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+  
+        self.file.close()
+  
 #    if IO_POS and IO_VEL:
 #      self.center_box()
 #      self.rotate_box()
@@ -460,18 +591,18 @@ class Snap:
     elif FlagCenter == 1:
       # Fixed Center
       if LengthUnit == 0:
-        fac = 1
+        fac = 1.
       elif LengthUnit == 1:
         fac = 1e3
       elif LengthUnit == 2:
         fac = UNIT_LENGTH / ASTRONOMICAL_UNIT
       else:
         print 'Length unit not implemented, we will assume pc'
-        fac = 1
+        fac = 1.
       if not ComovingUnits:
         fac /= (1 + self.params['redshift'])
       fac /= self.params['hubbleparam']
-      self.Center = fac * Center
+      self.Center = fac * np.array(Center)
     elif FlagCenter == 2:
       # Center of mass
       try:
