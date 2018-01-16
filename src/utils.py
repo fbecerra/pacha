@@ -71,30 +71,30 @@ def get_colormap(field):
 def get_label(field):
   if field == 'x':
     if LengthUnit == 0:
-      label = r'$x\,[{\rm pc}]$'
-    elif LengthUnit == 1:
       label = r'$x\,[{\rm kpc}]$'
+    elif LengthUnit == 1:
+      label = r'$x\,[{\rm pc}]$'
     else:
       label = r'$x\,[{\rm AU}]$'
   elif field == 'y':
     if LengthUnit == 0:
-      label = r'$y\,[{\rm pc}]$'
-    elif LengthUnit == 1:
       label = r'$y\,[{\rm kpc}]$'
+    elif LengthUnit == 1:
+      label = r'$y\,[{\rm pc}]$'
     else:
       label = r'$y\,[{\rm AU}]$'
   elif field == 'z':
     if LengthUnit == 0:
-      label = r'$z\,[{\rm pc}]$'
-    elif LengthUnit == 1:
       label = r'$z\,[{\rm kpc}]$'
+    elif LengthUnit == 1:
+      label = r'$z\,[{\rm pc}]$'
     else: 
       label = r'$z\,[{\rm AU}]$'
   elif field == 'radius':
     if LengthUnit == 0:
-      label = r'${\rm log}\left(r/{\rm pc}\right)$'
-    elif LengthUnit == 1:
       label = r'${\rm log}\left(r/{\rm kpc}\right)$'
+    elif LengthUnit == 1:
+      label = r'${\rm log}\left(r/{\rm pc}\right)$'
     else:
       label = r'${\rm log}\left(r/{\rm au}\right)$'
   elif field == 'enc_mass':
@@ -123,23 +123,23 @@ def get_label(field):
     label = r'$\mathcal{M}$'
   elif field == 'angmom':
     if LengthUnit == 0:
-      label = r'$l\,[{\rm pc}^2\,{\rm s}^{-1}]$'
-    elif LengthUnit == 1:
       label = r'$l\,[{\rm kpc}^2\,{\rm s}^{-1}]$'
+    elif LengthUnit == 1:
+      label = r'$l\,[{\rm pc}^2\,{\rm s}^{-1}]$'
     else:
       label = r'$l\,[{\rm AU}^2\,{\rm s}^{-1}]$'
   elif field == 'taugrav':
     if LengthUnit == 0:
-      label = r'$\tau_{\rm grav}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
-    elif LengthUnit == 1:
       label = r'$\tau_{\rm grav}\,[{\rm kpc}^2\,{\rm s}^{-2}]$'
+    elif LengthUnit == 1:
+      label = r'$\tau_{\rm grav}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
     else:
       label = r'$\tau_{\rm grav}\,[{\rm AU}^2\,{\rm s}^{-2}]$'
   elif field == 'taupres':
     if LengthUnit == 0:
-      label = r'$\tau_{\rm pres}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
-    elif LengthUnit == 1:
       label = r'$\tau_{\rm pres}\,[{\rm kpc}^2\,{\rm s}^{-2}]$'
+    elif LengthUnit == 1:
+      label = r'$\tau_{\rm pres}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
     else:
       label = r'$\tau_{\rm pres}\,[{\rm AU}^2\,{\rm s}^{-2}]$'
   elif field == 'tgrav':
