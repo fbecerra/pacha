@@ -6,9 +6,9 @@ import pylab as pl
 import time
 
 base= '/n/hernquistfs2/fbecerra/'
-sim = 'nahw1r3tgs2'
+sim = 'nahw1r3tgs1'
 #snaps = range(4, 11)
-snaps = range(11, 19)
+snaps = range(2, 17)
 fields = ['infall'] #, 'cs', 'mass']
 fig = pl.figure(figsize=(7,6))
 for snap in snaps:
@@ -65,7 +65,7 @@ pl.ylabel(pr.utils.get_label(field), fontsize=20)
 #idx = np.where(locs % 1 == 0)[0]
 #pl.yticks(locs[idx])
 pl.yticks(fontsize=16)
-pl.ylim(-5, 2)
+pl.ylim(-4, 1.5)
 
 # x-axis
 pl.xlabel(pr.utils.get_label('radius'), fontsize=20)
@@ -74,7 +74,7 @@ pl.xlabel(pr.utils.get_label('radius'), fontsize=20)
 #  locs = locs[np.where(locs % 2 == 0)[0]]
 #pl.xticks(locs)
 pl.xticks(fontsize=16)
-#pl.xlim(-1, 2)
+pl.xlim(-6, -3)
 #
 #pl.plot(np.array([xmin, xmax]), np.array([0,0]), 'k--')
 pl.legend(loc=4, prop={'size':12}, frameon=True)

@@ -516,7 +516,8 @@ class Snap:
       if IO_CHEM:
         mu = self.fields['mu']
       else:
-        mu = MU_NEUTRAL
+        #mu = MU_NEUTRAL
+        mu = 0.6 # BECDM case
       if IO_GAMMA:
         gamma = self.fields['gamma']
       else:
@@ -585,9 +586,14 @@ class Snap:
 
   def center_box(self):
     if FlagCenter == 0:
-      # Highest Density
-      self.max_dens_idx = self.find_max('rho')
-      self.Center = [self.fields['x'][self.max_dens_idx], self.fields['y'][self.max_dens_idx], self.fields['z'][self.max_dens_idx]]
+      try:
+        # Most massive sink 
+        self.sink_idx = np.argmax(self.new_fields['sinks']['mass'])
+        self.Center = [self.new_fields['sinks']['x'][sink_idx], self.new_fields['sinks']['y'][sink_idx], self.new_fields['sinks']['z'][sink_idx]]
+      except:
+        # Highest density
+        self.max_dens_idx = self.find_max('rho')
+        self.Center = [self.fields['x'][self.max_dens_idx], self.fields['y'][self.max_dens_idx], self.fields['z'][self.max_dens_idx]]
     elif FlagCenter == 1:
       # Fixed Center
       if LengthUnit == 0:

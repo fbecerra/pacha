@@ -183,7 +183,7 @@ class Radial:
                 angmom_y = np.sum(mass * (z * (vx - vel_cm_x) - x * (vz - vel_cm_z)))
                 angmom_z = np.sum(mass * (x * (vy - vel_cm_y) - y * (vx - vel_cm_x)))
 		if field == 'angmom':
-                  self.radial[field][j] = np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / totmass * UNIT_VELOCITY / UNIT_LENGTH
+                  self.radial[field][j] = np.log10(np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / totmass * UNIT_VELOCITY / UNIT_LENGTH)
 		if field == 'vrot':
                   self.radial[field][j] = np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / radius / rad_mass
                 del angmom_x, angmom_y, angmom_z
@@ -278,7 +278,7 @@ class Radial:
               taugrav_y = np.sum(mass * (z * ax - x * az))
               taugrav_z = np.sum(mass * (x * ay - y * ax))
               if field == 'taugrav':
-                self.radial[field][j] = np.sqrt(taugrav_x**2 + taugrav_y**2 + taugrav_z**2) / totmass
+                self.radial[field][j] = np.log10(np.sqrt(taugrav_x**2 + taugrav_y**2 + taugrav_z**2) / totmass)
               if field == 'tgrav':
                 vx, vy, vz = Snap.fields['vx'][idx], Snap.fields['vy'][idx], Snap.fields['vz'][idx]
 
@@ -316,7 +316,7 @@ class Radial:
               taupres_y = np.sum(mass * (z * gradpx - x * gradpz) / rho)
               taupres_z = np.sum(mass * (x * gradpy - y * gradpx) / rho)
               if field == 'taupres':
-                self.radial[field][j] = np.sqrt(taupres_x**2 + taupres_y**2 + taupres_z**2) / totmass
+                self.radial[field][j] = np.log10(np.sqrt(taupres_x**2 + taupres_y**2 + taupres_z**2) / totmass)
               if field == 'tpres':
                 vx, vy, vz = Snap.fields['vx'][idx], Snap.fields['vy'][idx], Snap.fields['vz'][idx]
 

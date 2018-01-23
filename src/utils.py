@@ -25,7 +25,7 @@ def total_mass(Snap, idx):
   return np.sum(Snap.fields['mass'][idx])
 
 def get_colormap(field):
-  if field == 'nh':
+  if field == 'nh' or field == 'rho':
     return viridis
   elif field == 'temp':
     return matplotlib.cm.gist_heat
@@ -123,25 +123,25 @@ def get_label(field):
     label = r'$\mathcal{M}$'
   elif field == 'angmom':
     if LengthUnit == 0:
-      label = r'$l\,[{\rm kpc}^2\,{\rm s}^{-1}]$'
+      label = r'${\rm log}\left(l/{\rm kpc}^2\,{\rm s}^{-1}\right)$'
     elif LengthUnit == 1:
-      label = r'$l\,[{\rm pc}^2\,{\rm s}^{-1}]$'
+      label = r'${\rm log}\left(l/{\rm pc}^2\,{\rm s}^{-1}\right)$'
     else:
-      label = r'$l\,[{\rm AU}^2\,{\rm s}^{-1}]$'
+      label = r'${\rm log}\left(l/{\rm AU}^2\,{\rm s}^{-1}\right)$'
   elif field == 'taugrav':
     if LengthUnit == 0:
-      label = r'$\tau_{\rm grav}\,[{\rm kpc}^2\,{\rm s}^{-2}]$'
+      label = r'${\rm log}\left(\tau_{\rm grav}/{\rm kpc}^2\,{\rm s}^{-2}\right)$'
     elif LengthUnit == 1:
-      label = r'$\tau_{\rm grav}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
+      label = r'${\rm log}\left(\tau_{\rm grav}/{\rm pc}^2\,{\rm s}^{-2}\right)$'
     else:
-      label = r'$\tau_{\rm grav}\,[{\rm AU}^2\,{\rm s}^{-2}]$'
+      label = r'${\rm log}\left(\tau_{\rm grav}/{\rm AU}^2\,{\rm s}^{-2}\right)$'
   elif field == 'taupres':
     if LengthUnit == 0:
-      label = r'$\tau_{\rm pres}\,[{\rm kpc}^2\,{\rm s}^{-2}]$'
+      label = r'${\rm log}\left(\tau_{\rm pres}/{\rm kpc}^2\,{\rm s}^{-2}\right)$'
     elif LengthUnit == 1:
-      label = r'$\tau_{\rm pres}\,[{\rm pc}^2\,{\rm s}^{-2}]$'
+      label = r'${\rm log}\left(\tau_{\rm pres}/{\rm pc}^2\,{\rm s}^{-2}\right)$'
     else:
-      label = r'$\tau_{\rm pres}\,[{\rm AU}^2\,{\rm s}^{-2}]$'
+      label = r'${\rm log}\left(\tau_{\rm pres}/{\rm AU}^2\,{\rm s}^{-2}\right)$'
   elif field == 'tgrav':
     label = r'$t_{\rm grav}\,[{\rm s}]$'
   elif field == 'tpres':
