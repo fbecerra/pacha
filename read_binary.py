@@ -6,42 +6,36 @@ import pylab as pl
 import time
 
 path = '/n/hernquistfs2/fbecerra/'
-base = 'nahw1tgs2'
+#base = 'nahw1r4sm3'
 #base = 'sink_test'
-#base = 'nahw1'
+base = 'nahw1r4ad3'
 
 start = time.time()
 
 def print_minmax(array):
   print np.min(array), np.max(array)
 
-###f = open('./outputs/sink_mass_'+base+'.txt', 'w')
+#f = open('./outputs/sink_mass_'+base+'.txt', 'w')
 
-for snap in np.arange(149, 150): 
+for snap in np.arange(32, 33):
   print 'Snapshot: ', snap
   snapbase = path + base + '/snapdir_%03i/' %snap + base + '_%03i' %snap
 #  snapbase = '/n/home00/fmarinacci/mvogelsfs1/SINKS/output5/snapdir_%03i/' %snap + base + '_%03i' %snap
   MySnap = pr.snap.Snap()
   MySnap.read_header(snapbase)
-  #print  MySnap.params['time']
   MySnap.read_fields(snapbase)
+  MySnap.calculate_radius()
 
+  print_minmax(MySnap.fields['radius'])
 
-  #print MySnap.params['masstable']*pr.constants.UNIT_MASS/pr.constants.SOLAR_MASS/MySnap.params['hubbleparam']
-  print_minmax(MySnap.sinks['id'])
-  print_minmax(MySnap.sinks['mass'])
-  print_minmax(MySnap.fields['id'])
-  print_minmax(MySnap.fields['mass'])
-
-  zeroids = np.where(MySnap.fields['id'] == 0)[0]
-  print len(zeroids)
-  ###try:
-  ###  MySnap.sinks['id']
-  ###except:
-  ###  print 'No sinks'
-  ###  continue
-  ###for idx, id in enumerate(MySnap.sinks['id']):
-  ###  f.write(str(MySnap.params['time']) + ' ' + str(id) + ' ' + str(MySnap.sinks['mass'][idx]) + '\n')
+#  zeroids = np.where(MySnap.fields['id'] == 0)[0]
+#  try:
+#    MySnap.new_fields['sinks']['id']
+#  except:
+#    print 'No sinks'
+#    continue
+#  for idx, id in enumerate(MySnap.new_fields['sinks']['id']):
+#    f.write(str(MySnap.params['time']) + ' ' + str(id) + ' ' + str(MySnap.new_fields['sinks']['mass'][idx]) + '\n')
 
   ####### Jeans number ####
   ####everypart = 50
@@ -55,7 +49,7 @@ for snap in np.arange(149, 150):
   ####density = MySnap.fields['nh'][idx]
 
   ####try:
-  ####  xsink, ysink, zsink = MySnap.sinks['x'][0], MySnap.sinks['y'][0], MySnap.sinks['z'][0]
+  ####  xsink, ysink, zsink = MySnap.new_fields['sinks']['x'][0], MySnap.new_fields['sinks']['y'][0], MySnap.new_fields['sinks']['z'][0]
   ####except:
   ####  max_nh = np.argmax(MySnap.fields['nh'])
   ####  xsink, ysink, zsink = MySnap.fields['x'][max_nh],  MySnap.fields['y'][max_nh],  MySnap.fields['z'][max_nh]
@@ -75,7 +69,7 @@ for snap in np.arange(149, 150):
   ####pl.show()
   ####pl.close()
 
-###f.close()
+#f.close()
 end = time.time()
 print 'Total time: %f' %(end - start)
 

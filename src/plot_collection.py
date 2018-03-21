@@ -50,30 +50,49 @@ class PlotCollection:
         subsmooth = smooth(MyRadial.radial[field][idx], window_len=10)
         MyRadial.radial[field][idx] = subsmooth
       pl.plot(MyRadial.radial['radius'], MyRadial.radial[field], 'k')
+      print field, np.min(MyRadial.radial[field]), np.max(MyRadial.radial[field])
       xmin, xmax = np.min(MyRadial.radial['radius']), np.max(MyRadial.radial['radius'])
+      #xmin, xmax = -3, 5
 
       if field == 'mbe_ratio' or field == 'q' or field == 'radial_tcool_ratio' or field == 'tcs_ratio' or field == 'gammie':
         pl.plot(np.array([xmin, xmax]), np.array([0,0]), 'k--')
       if field == 'nh':
         ymin, ymax = pl.ylim()
-        pl.plot(np.array([xmin, xmax]), -2*np.array([xmin,xmax]) + 20, 'k--')
-        pl.text(4,13, r'$n_{\rm H} \propto r^{-2}$', fontsize=18)
+        pl.plot(np.array([xmin, xmax]), -2*np.array([xmin,xmax]) + 8, 'k--')
+        pl.text(2.5, 4, r'$n_{\rm H} \propto r^{-2}$', fontsize=26)
+        pl.ylim(ymin, ymax)
+      if field == 'enc_mass':
+        Mvir = np.log10(1.5e8)
+        pl.plot(np.array([xmin, xmax]), np.array([Mvir,Mvir]), 'k--')
+        pl.text(-2, 8.5, r'$M_{\rm vir} \simeq 1.5\times10^8\,{\rm M}_\odot$', fontsize=26)
+      if field == 'temp':
+        ymin, ymax = 1.2, 5
+        Tvir = np.log10(34515)
+        pl.plot(np.array([xmin, xmax]), np.array([Tvir,Tvir]), 'k--')
+        pl.text(1.5,4.6, r'$T_{\rm vir} \simeq 3.5 \times 10^{4}\,{\rm K}$', fontsize=26)
         pl.ylim(ymin, ymax)
     
       # y-axis
       if field == 'geff':
         pl.ylim(0.5, 2)
-      if field == 'radial_tcool_ratio':
+      elif field == 'radial_tcool_ratio':
         pl.ylim(-2, 4)
-      if field == 'tcool_ratio':
+      elif field == 'tcool_ratio':
         ymin, ymax = pl.ylim()
         pl.ylim(0, 3)
-      if field == 'gammie':
+      elif field == 'gammie':
         pl.ylim(-2, 3)
+      elif field == 'angmom':
+        pl.ylim(-22, -17.5)
+      elif field == 'taugrav':
+        pl.ylim(-10.6, -8.5)
+      elif field == 'taupres':
+        pl.ylim(-11.8, -9)
       if (ncols > 1 and (index+1) % ncols == 0):
         ax.yaxis.tick_right()
         ax.yaxis.set_ticks_position('both')
         ax.yaxis.set_label_position('right')
+
       pl.ylabel(get_label(field), fontsize = 46)
       locs, labels = pl.yticks()
       locs = np.array(locs)
@@ -101,7 +120,7 @@ class PlotCollection:
       ax.tick_params(axis='both', labelsize=38)
     
     pl.subplots_adjust(wspace=0.0, hspace=0.0)
-    self.fig.set_size_inches(ncols*7, nrows*7)
+    self.fig.set_size_inches(ncols*7.5, nrows*7)
     del MyRadial
 
   def multi_pspace(self, snap, fields):
@@ -124,7 +143,7 @@ class PlotCollection:
         xmin, xmax = pl.xlim()
         pl.plot(np.array([xmin, xmax]), 2./3*np.array([xmin,xmax]) - 28./3, 'k--')
         pl.text(10,2, r'$T \propto n_{\rm H}^{2/3}$', fontsize=20)
-        pl.ylim(1, ymax)
+        pl.ylim(3, ymax)
       if field == 'abH2':
         ymin, ymax = pl.ylim()
         pl.ylim(-20, ymax)
@@ -213,13 +232,23 @@ class PlotCollection:
     
         idx_ax = nsnaps * idx_field + idx_snap
         vmin, vmax = np.min(MyImage.img), np.max(MyImage.img)
+        #if field == 'nh':
+        #  vmin, vmax = 4.6, 8
+        #  vmin, vmax = 7.1, 10
+        #elif field == 'temp':
+        #  vmin, vmax = 3.7, 4.5
+        #  vmin, vmax = 3.7, 4.1
         im = grid[idx_ax].imshow(MyImage.img, cmap = get_colormap(field), extent = [0, MyImage.xbins, 0, MyImage.ybins], vmin = vmin, vmax = vmax)
-        if len(MySnap.new_fields['sinks']['id']) > 0:
-          x_sinks = MyImage.xbins / 2. + MyImage.xbins * MySnap.new_fields['sinks']['x'] / MyImage.width
-          y_sinks = MyImage.ybins / 2. + MyImage.ybins * MySnap.new_fields['sinks']['y'] / MyImage.height
-          for cx, cy in zip(x_sinks, y_sinks):
-            if ((cx > 0) & (cx < MyImage.xbins) & (cy > 0) & (cy < MyImage.ybins)):
-              grid[idx_ax].plot(cx, cy, 'w+', ms=5, mew=3)
+        try:
+          nsinks = len(MySnap.new_fields['sinks']['id'])
+          if nsinks > 0:
+            x_sinks = MyImage.xbins / 2. + MyImage.xbins * MySnap.new_fields['sinks']['x'] / MyImage.width
+            y_sinks = MyImage.ybins / 2. + MyImage.ybins * MySnap.new_fields['sinks']['y'] / MyImage.height
+            for cx, cy in zip(x_sinks, y_sinks):
+              if ((cx > 0) & (cx < MyImage.xbins) & (cy > 0) & (cy < MyImage.ybins)):
+                grid[idx_ax].plot(cx, cy, 'w+', ms=5, mew=3)
+        except:
+          print 'Snapshot does not have sink particles'
         if PlotProto:
           f = h5py.File('/scratch/02563/fbecerra/paha/protostars/'+file+'.hdf5', 'r')
           for key in f.keys():
@@ -242,7 +271,8 @@ class PlotCollection:
         if PlotTime:
           grid[idx_ax].text(MyImage.xbins/10., MyImage.ybins/10., '%.2f yr' %(MySnap.params['time']*UNIT_TIME/SEC_PER_YEAR), fontsize=36, color='w')
         if PlotSize:
-          grid[idx_ax].text(MyImage.xbins*(1-2.5/10), MyImage.ybins*(1-1./10), '%i pc' %(ImgWidth*1e3), fontsize=36, color='w')
+          grid[idx_ax].text(MyImage.xbins*(1-3./10), MyImage.ybins*(1-1./10), '%.2f pc' %(ImgWidth*1e3), fontsize=36, color='w')
+        #grid[idx_ax].text(MyImage.xbins/10., MyImage.ybins*(1-1./10), sim, fontsize=36, color='w')
         #circ = pl.Circle((MyImage.xbins/2, MyImage.ybins/2), radius=MyImage.xbins*2e-3/ImgWidth, edgecolor='white', linestyle='dashed', fill=False)
         #grid[idx_ax].add_patch(circ)
         grid[idx_ax].set_xlim(0, MyImage.xbins)

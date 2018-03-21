@@ -17,11 +17,11 @@ class Image:
       ax1 = snap.fields['x']
       ax2 = snap.fields['y']
       ax3 = snap.fields['z']
-      idx = np.where((np.abs(ax1) < self.width / 2) & (np.abs(ax2) < self.height / 2) & (np.abs(ax3) < self.size / 2))[0]
-      min1 = np.minimum(np.maximum((ax1[idx] + self.width / 2 - snap.fields['hsml'][idx]) / self.width * self.xbins, 0).astype(int), self.xbins - 1).astype(int)
-      max1 = np.minimum(np.maximum((ax1[idx] + self.width / 2 + snap.fields['hsml'][idx]) / self.width * self.xbins, 0).astype(int), self.xbins - 1).astype(int)
-      min2 = np.minimum(np.maximum((ax2[idx] + self.height / 2 - snap.fields['hsml'][idx]) / self.height * self.ybins, 0).astype(int), self.ybins - 1).astype(int)
-      max2 = np.minimum(np.maximum((ax2[idx] + self.height / 2 + snap.fields['hsml'][idx]) / self.height * self.ybins, 0).astype(int), self.ybins - 1).astype(int)
+      idx = np.where((np.abs(ax1) < self.width / 2.) & (np.abs(ax2) < self.height / 2.) & (np.abs(ax3) < self.size / 2.))[0]
+      min1 = np.minimum(np.maximum((ax1[idx] + self.width / 2. - snap.fields['hsml'][idx]) / self.width * self.xbins, 0).astype(int), self.xbins - 1).astype(int)
+      max1 = np.minimum(np.maximum((ax1[idx] + self.width / 2. + snap.fields['hsml'][idx]) / self.width * self.xbins, 0).astype(int), self.xbins - 1).astype(int)
+      min2 = np.minimum(np.maximum((ax2[idx] + self.height / 2. - snap.fields['hsml'][idx]) / self.height * self.ybins, 0).astype(int), self.ybins - 1).astype(int)
+      max2 = np.minimum(np.maximum((ax2[idx] + self.height / 2. + snap.fields['hsml'][idx]) / self.height * self.ybins, 0).astype(int), self.ybins - 1).astype(int)
       calculate_image(snap, snap.fields[field], min1, max1, min2, max2, idx, sum, self.img)
       del ax1, ax2, ax3
       del idx

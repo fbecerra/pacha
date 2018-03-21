@@ -153,6 +153,14 @@ class Radial:
 
         # Radial and rotational velocities
         if field == 'vrad' or field == 'vrot' or field == 'vturb' or field == 'angmom':
+          # Convert units
+          if LengthUnit == 0:
+            fac = UNIT_LENGTH
+          elif LengthUnit == 1:
+            fac = UNIT_LENGTH / 1e3
+          elif LengthUnit == 2:
+            fac = ASTRONOMICAL_UNIT
+
           if IO_VEL:
             for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
               idx = np.where(r_idx == j)[0]
@@ -183,7 +191,7 @@ class Radial:
                 angmom_y = np.sum(mass * (z * (vx - vel_cm_x) - x * (vz - vel_cm_z)))
                 angmom_z = np.sum(mass * (x * (vy - vel_cm_y) - y * (vx - vel_cm_x)))
 		if field == 'angmom':
-                  self.radial[field][j] = np.log10(np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / totmass * UNIT_VELOCITY / UNIT_LENGTH)
+                  self.radial[field][j] = np.log10(np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / totmass * UNIT_VELOCITY * fac)
 		if field == 'vrot':
                   self.radial[field][j] = np.sqrt(angmom_x**2 + angmom_y**2 + angmom_z**2) / radius / rad_mass
                 del angmom_x, angmom_y, angmom_z
@@ -267,6 +275,15 @@ class Radial:
 
         # Gravitational torque
         if field == 'taugrav' or field == 'tgrav':
+
+          # Convert units
+          if LengthUnit == 0:
+            fac = UNIT_LENGTH
+          elif LengthUnit == 1:
+            fac = UNIT_LENGTH / 1e3
+          elif LengthUnit == 2:
+            fac = ASTRONOMICAL_UNIT
+
           if IO_GRAVACC:
             for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
               idx = np.where(r_idx == j)[0]
@@ -278,7 +295,7 @@ class Radial:
               taugrav_y = np.sum(mass * (z * ax - x * az))
               taugrav_z = np.sum(mass * (x * ay - y * ax))
               if field == 'taugrav':
-                self.radial[field][j] = np.log10(np.sqrt(taugrav_x**2 + taugrav_y**2 + taugrav_z**2) / totmass)
+                self.radial[field][j] = np.log10(np.sqrt(taugrav_x**2 + taugrav_y**2 + taugrav_z**2) / totmass * fac)
               if field == 'tgrav':
                 vx, vy, vz = Snap.fields['vx'][idx], Snap.fields['vy'][idx], Snap.fields['vz'][idx]
 
@@ -291,7 +308,7 @@ class Radial:
                 angmom_z = np.sum(mass * (x * (vy - vel_cm_y) - y * (vx - vel_cm_x)))
                 angmomsq = angmom_x**2. + angmom_y**2. + angmom_z**2.
 
-                self.radial[field][j] = angmomsq / (angmom_x * taugrav_x + angmom_y * taugrav_y + angmom_z * taugrav_z)
+                self.radial[field][j] = angmomsq / (angmom_x * taugrav_x + angmom_y * taugrav_y + angmom_z * taugrav_z) * UNIT_VELOCITY
                 del vx, vy, vz
                 del vel_cm_x, vel_cm_y, vel_cm_z
                 del angmom_x, angmom_y, angmom_z, angmomsq
@@ -304,6 +321,14 @@ class Radial:
 
         # Pressure torque
         if field == 'taupres' or field == 'tpres':
+          # Convert units
+          if LengthUnit == 0:
+            fac = UNIT_LENGTH
+          elif LengthUnit == 1:
+            fac = UNIT_LENGTH / 1e3
+          elif LengthUnit == 2:
+            fac = ASTRONOMICAL_UNIT
+
           if IO_GRADP:
             for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
               idx = np.where(r_idx == j)[0]
@@ -316,7 +341,7 @@ class Radial:
               taupres_y = np.sum(mass * (z * gradpx - x * gradpz) / rho)
               taupres_z = np.sum(mass * (x * gradpy - y * gradpx) / rho)
               if field == 'taupres':
-                self.radial[field][j] = np.log10(np.sqrt(taupres_x**2 + taupres_y**2 + taupres_z**2) / totmass)
+                self.radial[field][j] = np.log10(np.sqrt(taupres_x**2 + taupres_y**2 + taupres_z**2) / totmass * fac)
               if field == 'tpres':
                 vx, vy, vz = Snap.fields['vx'][idx], Snap.fields['vy'][idx], Snap.fields['vz'][idx]
 
@@ -329,7 +354,7 @@ class Radial:
                 angmom_z = np.sum(mass * (x * (vy - vel_cm_y) - y * (vx - vel_cm_x)))
                 angmomsq = angmom_x**2 + angmom_y**2 + angmom_z**2
 
-                self.radial[field][j] = angmomsq / (angmom_x * taupres_x + angmom_y * taupres_y + angmom_z * taupres_z)
+                self.radial[field][j] = angmomsq / (angmom_x * taupres_x + angmom_y * taupres_y + angmom_z * taupres_z) * UNIT_VELOCITY
                 del vx, vy, vz
                 del vel_cm_x, vel_cm_y, vel_cm_z
                 del angmom_x, angmom_y, angmom_z, angmomsq
@@ -479,7 +504,7 @@ class Radial:
             tff = np.sqrt(3. * np.pi / 32. / GRAVITY / 10**self.radial['rho'])
             self.radial[field] = np.log10(10**self.radial['u'] * 10**self.radial['rho'] / self.radial['radial_cool_rate'] / tff)
           else:
-            print ' Energy or Density was not read!'
+            print 'Energy or Density was not read!'
 
         # Radial Gammie criterion
         if field == 'gammie':
@@ -532,7 +557,49 @@ class Radial:
 
             self.radial[field] =  (-4) * np.pi * (fac * 10**self.radial['radius'])**2. * 10**self.radial['rho'] * (self.radial['vrad'] * 1e5) / SOLAR_MASS * SEC_PER_YEAR
           else:
-            print ' Energy or Density was not read!'
+            print 'Velocity or Density was not read!'
+
+        # Ionizing radiation
+        if field == 'Nion':
+          if IO_RHO and IO_U:
+            try:
+              self.radial['nh'][0]
+            except:
+              self.radial_profile(Snap, ['nh'])
+            try:
+              self.radial['temp'][0]
+            except:
+              self.radial_profile(Snap, ['temp'])
+
+            # Convert units
+            if LengthUnit == 0:
+              fac = UNIT_LENGTH
+            elif LengthUnit == 1:
+              fac = UNIT_LENGTH / 1e3
+            elif LengthUnit == 2:
+              fac = ASTRONOMICAL_UNIT
+            else:
+              print 'Length unit not implemented, we will assume pc'
+              fac = UNIT_LENGTH
+
+            # Option 1: using radial profiles for other quantities
+            #temp4 = 10**self.radial['temp'] / 1e4
+            #nh   = 10**self.radial['nh']
+            #rad   = 10**self.radial['radius']
+            #self.radial[field] = 4 * np.pi * 2.59e-13 * temp4**(-0.7) * nh**2. * (rad * fac)**2.
+
+            # Option 2: calculating radial profile for everything
+            for j in np.unique(r_idx[(r_idx >= 0) & (r_idx < RadialBins)]):
+              idx = np.where(r_idx == j)[0]
+              mass = Snap.fields['mass'][idx]
+              nh = Snap.fields['nh'][idx]
+              temp4 = Snap.fields['temp'][idx] / 1e4
+              totmass = np.sum(mass)
+              x, y, z = Snap.fields['x'][idx], Snap.fields['y'][idx], Snap.fields['z'][idx]
+              rad2 = x**2. + y**2. + z**2.
+              self.radial[field][j] = 4 * np.pi * 2.59e-13 * np.sum(mass * temp4**(-0.7) * nh**2. * rad2 * fac**2.) / totmass
+          else:
+            print 'Energy or Density was not read!'
 
   def find_max(self, field):
     # Returns index of cell with maximum value of a field
