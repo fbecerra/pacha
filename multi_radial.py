@@ -17,11 +17,12 @@ plot_fields = ['nh', 'enc_mass', 'temp', 'abH2']
 #plot_fields = ['sigma_gas', 'cs', 'omega_rot', 'q']
 #plot_fields = ['geff', 'dnh', 'tcool_ratio', 'tcs_ratio'] 
 #plot_fields = ['tcool', 'omega_rot', 'gammie', 'tcool_ratio']
+sim, snap_init, snap_final = 'nahw1r2', 30, 30 
 
 ### Sinks
 #sim, snap_init, snap_final = 'nahw1r4sm1', 1, 20
 #sim, snap_init, snap_final = 'nahw1r4sm2', 7, 16
-sim, snap_init, snap_final = 'nahw1r4sm3', 14, 26
+#sim, snap_init, snap_final = 'nahw1r4sm3', 14, 26
 
 ### Adiabatic
 #sim, snap_init, snap_final = 'nahw1r4ad1', 1, 31
@@ -30,6 +31,10 @@ sim, snap_init, snap_final = 'nahw1r4sm3', 14, 26
 
 ### Extras
 #sim, snap_init, snap_final = 'nahw1', 137, 137
+
+### MRT
+#plot_fields = ['nh', 'phodens']
+#sim, snap_init, snap_final = 'nahw1r4rt1', 3, 15
 
 for snap in xrange(snap_init, snap_final+1):
   print 'Snapshot: ', snap

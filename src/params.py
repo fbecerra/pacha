@@ -1,7 +1,7 @@
-LengthUnit = 1 # 0: kpc, 1: pc, 2: AU
+LengthUnit = 0 # 0: kpc, 1: pc, 2: AU
 ComovingUnits = 0 # 0: no, 1: yes
 FlagCenter = 0 # 0: Highest density, 1: Fixed center, 2: Center of mass
-#Center = [570, 900, 1280]
+#Center = [647.77777935, 678.76391116, 658.65114692]
 FlagRotate = 0 # 0: w/r to velocity vector, 1: Fixed angle (requires Angle)
 #Angle = 
 Usage = 1

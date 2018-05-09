@@ -33,10 +33,12 @@ def get_colormap(field):
     return matplotlib.cm.jet
   elif field == 'gradp':
     return matplotlib.cm.jet
+  elif field == 'phodens':
+    return magma
   elif field == 'abhm':
     return matplotlib.cm.gist_stern
   elif field == 'abH2':
-    return matplotlib.cm.gist_stern
+    return inferno
   elif field == 'abhii':
     return matplotlib.cm.get_cmap('own1')
   elif field == 'abdii':
@@ -141,7 +143,7 @@ def get_label(field):
     elif LengthUnit == 1:
       label = r'${\rm log}\left(\tau_{\rm pres}/{\rm pc}^2\,{\rm s}^{-2}\right)$'
     else:
-      label = r'${\rm log}\left(\tau_{\rm pres}/{\rm AU}^2\,{\rm s}^{-2}\right)$'
+      abel = r'${\rm log}\left(\tau_{\rm pres}/{\rm AU}^2\,{\rm s}^{-2}\right)$'
   elif field == 'tgrav':
     label = r'$t_{\rm grav}\,[{\rm s}]$'
   elif field == 'tpres':
@@ -198,5 +200,7 @@ def get_label(field):
     label = r'${\rm log}\left(t_{\rm cool}/3\Omega^{-1} \right)$'
   elif field == 'infall':
     label = r'${\rm log}\left(\dot{M}/{\rm M}_\odot\,{\rm yr}^{-1}\right)$'
+  elif field == 'phodens':
+    label = r'${\rm log}\left(n_{\gamma}/{\rm cm}^{-3}\right)$'  
 
   return label

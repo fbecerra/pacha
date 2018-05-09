@@ -54,23 +54,27 @@ class PlotCollection:
       xmin, xmax = np.min(MyRadial.radial['radius']), np.max(MyRadial.radial['radius'])
       #xmin, xmax = -3, 5
 
-      if field == 'mbe_ratio' or field == 'q' or field == 'radial_tcool_ratio' or field == 'tcs_ratio' or field == 'gammie':
-        pl.plot(np.array([xmin, xmax]), np.array([0,0]), 'k--')
-      if field == 'nh':
-        ymin, ymax = pl.ylim()
-        pl.plot(np.array([xmin, xmax]), -2*np.array([xmin,xmax]) + 8, 'k--')
-        pl.text(2.5, 4, r'$n_{\rm H} \propto r^{-2}$', fontsize=26)
-        pl.ylim(ymin, ymax)
-      if field == 'enc_mass':
-        Mvir = np.log10(1.5e8)
-        pl.plot(np.array([xmin, xmax]), np.array([Mvir,Mvir]), 'k--')
-        pl.text(-2, 8.5, r'$M_{\rm vir} \simeq 1.5\times10^8\,{\rm M}_\odot$', fontsize=26)
-      if field == 'temp':
-        ymin, ymax = 1.2, 5
-        Tvir = np.log10(34515)
-        pl.plot(np.array([xmin, xmax]), np.array([Tvir,Tvir]), 'k--')
-        pl.text(1.5,4.6, r'$T_{\rm vir} \simeq 3.5 \times 10^{4}\,{\rm K}$', fontsize=26)
-        pl.ylim(ymin, ymax)
+      #if field == 'mbe_ratio' or field == 'q' or field == 'radial_tcool_ratio' or field == 'tcs_ratio' or field == 'gammie':
+      #  pl.plot(np.array([xmin, xmax]), np.array([0,0]), 'k--')
+      #if field == 'nh':
+      #  ymin, ymax = pl.ylim()
+      #  pl.plot(np.array([xmin, xmax]), -2*np.array([xmin,xmax]) + 8, 'k--')
+      #  pl.text(2.5, 4, r'$n_{\rm H} \propto r^{-2}$', fontsize=26)
+      #  pl.ylim(ymin, ymax)
+      #if field == 'enc_mass':
+      #  Mvir = np.log10(1.5e8)
+      #  pl.plot(np.array([xmin, xmax]), np.array([Mvir,Mvir]), 'k--')
+      #  pl.text(-2, 8.5, r'$M_{\rm vir} \simeq 1.5\times10^8\,{\rm M}_\odot$', fontsize=26)
+      #if field == 'temp':
+      #  ymin, ymax = 1.2, 5
+      #  Tvir = np.log10(34515)
+      #  pl.plot(np.array([xmin, xmax]), np.array([Tvir,Tvir]), 'k--')
+      #  pl.text(1.5,4.6, r'$T_{\rm vir} \simeq 3.5 \times 10^{4}\,{\rm K}$', fontsize=26)
+      #  pl.ylim(ymin, ymax)
+      #if field == 'phodens':
+      #  ymin, ymax = 0, 14
+      #  pl.plot(np.array([xmin, xmax]), -2*np.array([xmin,xmax]) + 8, 'k--')
+      #  pl.ylim(ymin, ymax)
     
       # y-axis
       if field == 'geff':
@@ -224,6 +228,7 @@ class PlotCollection:
         MySnap.center_box()
       if Rotate:
         MySnap.rotate_box()
+      print MySnap.Center
     
       for idx_field in range(nfields):
         field = fields[idx_field]
@@ -238,10 +243,13 @@ class PlotCollection:
         #elif field == 'temp':
         #  vmin, vmax = 3.7, 4.5
         #  vmin, vmax = 3.7, 4.1
+        if field == 'phodens':
+          vmin, vmax = 0, 14
         im = grid[idx_ax].imshow(MyImage.img, cmap = get_colormap(field), extent = [0, MyImage.xbins, 0, MyImage.ybins], vmin = vmin, vmax = vmax)
         try:
           nsinks = len(MySnap.new_fields['sinks']['id'])
           if nsinks > 0:
+            print MySnap.new_fields['sinks']['x'], MySnap.new_fields['sinks']['y']
             x_sinks = MyImage.xbins / 2. + MyImage.xbins * MySnap.new_fields['sinks']['x'] / MyImage.width
             y_sinks = MyImage.ybins / 2. + MyImage.ybins * MySnap.new_fields['sinks']['y'] / MyImage.height
             for cx, cy in zip(x_sinks, y_sinks):

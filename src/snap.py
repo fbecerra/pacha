@@ -112,6 +112,10 @@ class Snap:
       self.fields['hsml'] = np.array([], dtype = np.float64)
     if IO_DELAUNAY:
       self.fields['delaunay'] = np.array([], dtype = np.float64)
+    if IO_GRADV:
+      self.fields['gradvx'] = np.array([], dtype = np.float64)
+      self.fields['gradvy'] = np.array([], dtype = np.float64)
+      self.fields['gradvz'] = np.array([], dtype = np.float64)
     if IO_GRAVACC:
       self.fields['gravaccx'] = np.array([], dtype = np.float64)
       self.fields['gravaccy'] = np.array([], dtype = np.float64)
@@ -121,6 +125,8 @@ class Snap:
       self.fields['gradpx'] = np.array([], dtype = np.float64)
       self.fields['gradpy'] = np.array([], dtype = np.float64)
       self.fields['gradpz'] = np.array([], dtype = np.float64)
+    if IO_PHODENS:
+      self.fields['phodens'] = np.array([], dtype = np.float64)
     if IO_CHEM:
       self.fields['abHM'] = np.array([], dtype = np.float64)
       self.fields['abH2'] = np.array([], dtype = np.float64)
@@ -128,6 +134,10 @@ class Snap:
       self.fields['mu'] = np.array([], dtype = np.float64)
     if IO_GAMMA:
       self.fields['gamma'] = np.array([], dtype = np.float64)
+    if IO_ALLOWREF:
+      self.fields['allowref'] = np.array([], dtype = np.int64)
+    if IO_DIVVEL:
+      self.fields['divvel'] = np.array([], dtype = np.float64)
 
     # Check if header has been read
     try:
@@ -417,6 +427,22 @@ class Snap:
           del delaunay
           self.file.seek(self.nbytes-ngas*8,1)
           self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+
+        # Read velocity gradient
+        if IO_GRADV:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          #fac = UNIT_LENGTH / UNIT_TIME**2.
+          # Read values
+          gradv = fac * np.fromfile(self.file, dtype=np.dtype('d'), count=3*ngas)
+          self.fields['gradvx'] = np.append(self.fields['gradvx'], gradv[0::3])
+          self.fields['gradvy'] = np.append(self.fields['gradvy'], gradv[1::3])
+          self.fields['gradvz'] = np.append(self.fields['gradvz'], gradv[2::3])
+          #del gravacc
+          self.file.seek(self.nbytes-3*ngas*8,1)
+          # SKIP THIS FIELD
+          #self.file.seek(self.nbytes)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
   
         # Read gravitational acceleration
         if IO_GRAVACC:
@@ -448,6 +474,17 @@ class Snap:
           self.file.seek(self.nbytes-3*ngas*8,1)
           self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
   
+        # Read photon density for MRT
+        if IO_PHODENS:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          # Convert units
+          fac = 1e63 / UNIT_LENGTH**3 * (1 + self.params['redshift'])**3 * self.params['hubbleparam']**3 
+          phodens = np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['phodens'] = np.append(self.fields['phodens'], phodens)
+          del phodens
+          self.file.seek(self.nbytes-ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+
         # Read chemistry
         if IO_CHEM:
           self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
@@ -467,7 +504,24 @@ class Snap:
           del gamma
           self.file.seek(self.nbytes-ngas*8,1)
           self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
-  
+
+        # Read allow refinement
+        if IO_ALLOWREF:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          allowref = np.fromfile(self.file, dtype=np.dtype('i'), count=ngas)
+          self.fields['allowref'] = np.append(self.fields['allowref'], allowref)
+          del allowref
+          self.file.seek(self.nbytes-ngas*4,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+
+        if IO_DIVVEL:
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+          divvel = np.fromfile(self.file, dtype=np.dtype('d'), count=ngas)
+          self.fields['divvel'] = np.append(self.fields['divvel'], divvel)
+          del divvel
+          self.file.seek(self.nbytes-ngas*8,1)
+          self.nbytes = np.fromfile(self.file, dtype=np.dtype('i'), count=1)[0]
+
         self.file.close()
   
 #    if IO_POS and IO_VEL:
@@ -594,6 +648,7 @@ class Snap:
         # Highest density
         self.max_dens_idx = self.find_max('rho')
         self.Center = [self.fields['x'][self.max_dens_idx], self.fields['y'][self.max_dens_idx], self.fields['z'][self.max_dens_idx]]
+        #print self.fields['id'][self.max_dens_idx]
     elif FlagCenter == 1:
       # Fixed Center
       if LengthUnit == 0:

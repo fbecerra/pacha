@@ -128,10 +128,10 @@ for idx, sim in enumerate(sims):
 ax[1,1].legend(loc='lower right', prop={'size':20})
 
 # y-axis
-ax[0,0].set_ylabel(r'$\log \left(\tau_{\rm grav}/{\rm cm}^2\,{\rm s}^2\right)$', fontsize=fontsize)
-ax[0,1].set_ylabel(r'$\log \left(\tau_{\rm pres}/{\rm cm}^2\,{\rm s}^2\right)$', fontsize=fontsize)
+ax[0,0].set_ylabel(r'$\log \left(\tau_{\rm grav}/{\rm cm}^2\,{\rm s}^{-2}\right)$', fontsize=fontsize)
+ax[0,1].set_ylabel(r'$\log \left(\tau_{\rm pres}/{\rm cm}^2\,{\rm s}^{-2}\right)$', fontsize=fontsize)
 ax[1,0].set_ylabel(r'$\log (\tau_{\rm grav}/\tau_{\rm pres})$', fontsize=fontsize)
-ax[1,1].set_ylabel(r'$\log \left(l/{\rm cm}^2\,{\rm s}\right)$', fontsize=fontsize)
+ax[1,1].set_ylabel(r'$\log \left(l/{\rm cm}^2\,{\rm s}^{-1}\right)$', fontsize=fontsize)
 #ax[1].set_ylabel(r'$t_{\rm grav}/t_{\rm pres}$')
 ax[2,0].set_ylabel(r'$\log \left(t_{\rm grav}/t_{\rm ff}\right)$', fontsize=fontsize)
 ax[2,1].set_ylabel(r'$\log \left(t_{\rm pres}/t_{\rm ff}\right)$', fontsize=fontsize)

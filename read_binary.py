@@ -8,7 +8,7 @@ import time
 path = '/n/hernquistfs2/fbecerra/'
 #base = 'nahw1r4sm3'
 #base = 'sink_test'
-base = 'nahw1r4ad3'
+base = 'nahw1r4sm2'
 
 start = time.time()
 
@@ -17,16 +17,16 @@ def print_minmax(array):
 
 #f = open('./outputs/sink_mass_'+base+'.txt', 'w')
 
-for snap in np.arange(32, 33):
+for snap in np.arange(7, 17):
   print 'Snapshot: ', snap
   snapbase = path + base + '/snapdir_%03i/' %snap + base + '_%03i' %snap
 #  snapbase = '/n/home00/fmarinacci/mvogelsfs1/SINKS/output5/snapdir_%03i/' %snap + base + '_%03i' %snap
   MySnap = pr.snap.Snap()
   MySnap.read_header(snapbase)
-  MySnap.read_fields(snapbase)
-  MySnap.calculate_radius()
+  #MySnap.read_fields(snapbase)
+  #MySnap.calculate_radius()
 
-  print_minmax(MySnap.fields['radius'])
+  print MySnap.params['time']
 
 #  zeroids = np.where(MySnap.fields['id'] == 0)[0]
 #  try:
